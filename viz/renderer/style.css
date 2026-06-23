@@ -104,9 +104,39 @@ body {
   white-space: nowrap;
 }
 
+/* ── chat history: scrolling, translucent conversation log ────────────────── */
+#chatlog {
+  position: absolute;
+  top: 62px; right: 2.5%;
+  width: 34%; max-width: 480px;
+  max-height: 56%;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 7px;
+  padding: 6px 8px;
+  z-index: 8;
+  scroll-behavior: smooth;
+}
+.logmsg {
+  background: rgba(255, 255, 255, .42);
+  border-left: 4px solid var(--c, #ff6f91);
+  border-radius: 12px;
+  padding: 6px 11px;
+  font-size: 13px; line-height: 1.35;
+  color: #45372b;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .08);
+  backdrop-filter: blur(2px);
+  animation: logIn .3s ease;
+}
+.logmsg .who { font-weight: 800; }
+.logmsg .logphase { font-size: 11px; opacity: .6; }
+@keyframes logIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+#chatlog::-webkit-scrollbar { width: 7px; }
+#chatlog::-webkit-scrollbar-thumb { background: rgba(255, 143, 177, .6); border-radius: 4px; }
+#chatlog::-webkit-scrollbar-track { background: transparent; }
+
 /* ── stage: the poodle pack ───────────────────────────────────────────────── */
 #stage {
-  position: absolute; left: 0; right: 0; bottom: 7%;
+  position: absolute; left: 0; right: 0; bottom: 10%;
   height: 60%;
   display: flex; align-items: flex-end; justify-content: center;
   gap: clamp(6px, 2.2vw, 34px);
@@ -153,13 +183,13 @@ body {
 }
 .nameplate .role { font-weight: 500; opacity: .85; font-size: 11px; }
 
-/* accessory floats by the head */
+/* hibiscus tucked by the ear */
 .accessory {
-  position: absolute; top: 2px; right: 8px;
-  font-size: 22px; z-index: 3;
+  position: absolute; top: 0; right: 10px; z-index: 3;
   animation: bob 2.6s ease-in-out infinite;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,.2));
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
 }
+.accessory svg { width: 27px; height: 27px; display: block; }
 
 /* ── speech bubbles ───────────────────────────────────────────────────────── */
 .bubble {
