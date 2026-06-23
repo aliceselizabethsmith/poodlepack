@@ -10,9 +10,9 @@ const CAST_STYLE = {
   // different-colored Hawaiian hibiscus (the `flower` color).
   architect: { color: '#22222a', size: 1.40, flower: '#ff4d6d', label: 'architect', flowerTop: -28 },
   coder:     { color: '#7bdcb5', size: 1.00, flower: '#ff8c42', label: 'programmer' },
-  reviewer:  { color: '#2b2b34', size: 1.12, flower: '#a06bff', label: 'reviewer', flowerTop: -6 },
+  reviewer:  { color: '#f3f0e9', size: 1.12, flower: '#a06bff', label: 'reviewer', flowerTop: -14, halo: true },
   tester:    { color: '#d96b63', size: 0.92, flower: '#ffcf33', label: 'tester' },
-  security:  { color: '#9aa0b5', size: 1.12, flower: '#ff5db1', label: 'security', flowerTop: -6 },
+  security:  { color: '#9aa0b5', size: 1.12, flower: '#ff5db1', label: 'security', flowerTop: -14 },
   scribe:    { color: '#ffb0d4', size: 0.82, flower: '#6fb7ff', label: 'scribe', flowerTop: 24 },
 }
 const FALLBACK_STYLE = { color: '#ffb3c6', size: 1.0, flower: '#ff8fb0', label: 'crew' }
@@ -32,8 +32,11 @@ const chars = {}   // role -> { el, pup, persona, style }
 let svgSeq = 0
 
 /* ── poodle artwork (pure SVG, built from fluffy overlapping circles) ──────── */
-function poodleSVG(color) {
+function poodleSVG(color, halo) {
   const gid = `hl${svgSeq++}`
+  const haloMarkup = halo ? `
+    <ellipse cx="55" cy="-7" rx="25" ry="7" fill="none" stroke="#ffd95a" stroke-width="5" opacity=".9"/>
+    <ellipse cx="55" cy="-7" rx="25" ry="7" fill="none" stroke="#fff7c8" stroke-width="1.8"/>` : ''
   const fluff = [
     // topknot pouf
     [55, 13, 12], [45, 18, 9], [65, 18, 9],
@@ -54,7 +57,7 @@ function poodleSVG(color) {
         <stop offset="0%" stop-color="#ffffff" stop-opacity=".6"/>
         <stop offset="55%" stop-color="#ffffff" stop-opacity="0"/>
       </radialGradient>
-    </defs>
+    </defs>${haloMarkup}
     <!-- ground shadow -->
     <ellipse cx="55" cy="126" rx="40" ry="7" fill="rgba(0,0,0,.14)"/>
     <!-- haunch base -->
@@ -124,7 +127,7 @@ function ensureChar(role, persona) {
   el.innerHTML = `
     <div class="ring"></div>
     <span class="accessory"${style.flowerTop != null ? ` style="top:${style.flowerTop}px"` : ''}>${flowerSVG(style.flower)}</span>
-    <div class="pup" style="--s: ${style.size}">${poodleSVG(style.color)}</div>
+    <div class="pup" style="--s: ${style.size}">${poodleSVG(style.color, style.halo)}</div>
     <div class="nameplate"><span class="pname">${persona || role}</span>
       <span class="role">${style.label}</span></div>`
   stage.appendChild(el)
@@ -292,7 +295,8 @@ function renderNextQuestion() {
   qmodal.innerHTML = ''
   qmodal.appendChild(card)
   qmodal.classList.remove('hidden')
-  setTimeout(() => input.focus(), 50)
+  // only grab focus if our window is foreground — focusing a background window dings Windows
+  setTimeout(() => { if (document.hasFocus()) input.focus() }, 50)
 }
 
 /* ── wire the event streams from main ─────────────────────────────────────── */
@@ -329,7 +333,7 @@ window.devcrew.onStatus((s) => {
   else if (s.state === 'error') { phaseBadge.textContent = 'uh-oh 🌧️'; tickerEl.textContent = s.message || 'the build hit a snag.' }
 })
 
-/* kick up little sand puffs at the feet of whichever poodle is digging (active) */
+/* kick up a sandstorm at the feet of whichever poodle is digging (active) */
 setInterval(() => {
   const pup = document.querySelector('.poodle.active .pup')
   if (!pup || !fxLayer) return
@@ -337,15 +341,18 @@ setInterval(() => {
   const r = pup.getBoundingClientRect()
   const baseX = r.left - scene.left + r.width / 2
   const baseY = r.bottom - scene.top - 12
-  const count = 1 + Math.floor(Math.random() * 2)
+  const count = 5 + Math.floor(Math.random() * 5) // 5-9 grains per burst
   for (let i = 0; i < count; i++) {
     const puff = document.createElement('div')
     puff.className = 'sandpuff'
-    const off = (Math.random() - 0.5) * 34
-    puff.style.left = `${baseX + off - 5}px`
-    puff.style.top = `${baseY + (Math.random() - 0.5) * 6}px`
-    puff.style.setProperty('--dx', `${off * 0.8}px`)
+    const off = (Math.random() - 0.5) * 90          // wide spread
+    const size = 7 + Math.random() * 12             // varied grain sizes
+    puff.style.width = puff.style.height = `${size}px`
+    puff.style.left = `${baseX + off - size / 2}px`
+    puff.style.top = `${baseY + (Math.random() - 0.5) * 10}px`
+    puff.style.setProperty('--dx', `${off * 1.3}px`)
+    puff.style.setProperty('--dy', `${-30 - Math.random() * 45}px`) // higher arcs
     fxLayer.appendChild(puff)
-    setTimeout(() => puff.remove(), 760)
+    setTimeout(() => puff.remove(), 900)
   }
-}, 420)
+}, 180)

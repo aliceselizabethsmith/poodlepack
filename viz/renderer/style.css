@@ -175,7 +175,7 @@ body {
 }
 @keyframes puff {
   0%   { transform: translate(0, 0) scale(.4); opacity: .95; }
-  100% { transform: translate(var(--dx, 0), -26px) scale(1.15); opacity: 0; }
+  100% { transform: translate(var(--dx, 0), var(--dy, -28px)) scale(1.25); opacity: 0; }
 }
 
 .pup {
