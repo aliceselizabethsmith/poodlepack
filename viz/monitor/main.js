@@ -33,7 +33,7 @@ async function loadScanner() {
 function createWindow() {
   win = new BrowserWindow({
     width: 1040, height: 620, minWidth: 720, minHeight: 460,
-    title: 'PoodleDASH 🐩',
+    title: 'PoodlePack 🐩',
     backgroundColor: '#ffd9a0',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -41,6 +41,10 @@ function createWindow() {
     },
   })
   win.removeMenu()
+  // capture renderer console to a file so we can diagnose audio
+  win.webContents.on('console-message', (_e, _lvl, message) => {
+    try { fs.appendFileSync(path.join(os.homedir(), '.devcrew', 'renderer.log'), message + '\n') } catch {}
+  })
   win.loadFile(path.join(__dirname, 'index.html'))
   win.webContents.once('did-finish-load', () => {
     if (process.env.DEVCREW_DEMO) startDemo()

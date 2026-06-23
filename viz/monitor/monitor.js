@@ -77,9 +77,14 @@ function chime() {
 }
 // gentle Hawaiian background loop
 if (music) {
-  music.volume = 0.32
-  music.play().catch(() => { /* a click on the speaker will start it */ })
+  music.volume = 0.5
+  music.addEventListener('error', () => console.log('MUSIC error code=' + (music.error && music.error.code)))
+  music.play().then(() => console.log('MUSIC playing')).catch(e => console.log('MUSIC play rejected: ' + e))
 }
+try {
+  const probe = new (window.AudioContext || window.webkitAudioContext)()
+  console.log('AUDIOCTX state=' + probe.state)
+} catch (e) { console.log('AUDIOCTX error: ' + e) }
 muteBtn.addEventListener('click', () => {
   muted = !muted
   muteBtn.textContent = muted ? '🔇' : '🔊'
