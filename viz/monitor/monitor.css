@@ -16,6 +16,7 @@
 #stage {
   position: absolute;
   left: 1.5%; right: 26.5%; top: 56px; bottom: 30px;
+  height: auto;            /* override style.css's height:60% so top+bottom = full height */
   display: flex; flex-wrap: wrap;
   align-content: space-evenly; justify-content: space-evenly;
   gap: 8px;
@@ -28,6 +29,7 @@
   width: 190px;
   display: flex; flex-direction: column; align-items: center;
   flex: 0 0 auto;
+  zoom: var(--cs, 1); /* uniform fit-to-window scale set by fitStage() */
 }
 .agent-card .poodle { animation: bob 3.4s ease-in-out infinite; }
 .agent-card .pup { width: 94px; height: 112px; }
@@ -65,18 +67,6 @@
   max-height: none;
   gap: 8px;
 }
-
-/* crowded kennel (7+ agents): shrink cards so they all stay visible */
-#stage.compact { gap: 6px; }
-#stage.compact .agent-card { width: 146px; }
-#stage.compact .agent-card .pup { width: 72px; height: 86px; }
-#stage.compact .agent-card .ring { width: 58px; margin-left: -29px; bottom: 12px; }
-#stage.compact .agent-card .accessory { right: 24px; top: 12px; }
-#stage.compact .agent-card .accessory svg { width: 17px; height: 17px; }
-#stage.compact .agent-card .nameplate { font-size: 10px; padding: 2px 7px; }
-#stage.compact .agent-card .nameplate .role { font-size: 9px; }
-#stage.compact .cardbubble { max-width: 144px; font-size: 10.5px; padding: 5px 8px; }
-#stage.compact .cardbubble::after { left: 20px; }
 
 /* idle mood */
 body.idle #stage::after {
