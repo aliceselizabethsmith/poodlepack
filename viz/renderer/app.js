@@ -35,16 +35,12 @@ let svgSeq = 0
 function poodleSVG(color, halo) {
   const gid = `hl${svgSeq++}`
   const haloMarkup = halo ? `
-    <ellipse cx="55" cy="-18" rx="25" ry="7" fill="none" stroke="#ffd95a" stroke-width="5" opacity=".9"/>
-    <ellipse cx="55" cy="-18" rx="25" ry="7" fill="none" stroke="#fff7c8" stroke-width="1.8"/>` : ''
+    <ellipse cx="55" cy="-9" rx="25" ry="7" fill="none" stroke="#ffd95a" stroke-width="5" opacity=".9"/>
+    <ellipse cx="55" cy="-9" rx="25" ry="7" fill="none" stroke="#fff7c8" stroke-width="1.8"/>` : ''
   const fluff = [
-    // poofy but rounded head — full coverage with a gentle, mostly-circular outline
-    [55, 34, 31],                                  // big round head base (the face sits on this)
-    [55, 13, 14], [41, 19, 12], [69, 19, 12],      // soft rounded crown poofs
-    [30, 35, 12], [80, 35, 12],                    // gentle side fluff
-    // ears (droopy poufs each side)
-    [21, 47, 13], [18, 61, 12], [25, 71, 9],
-    [89, 47, 13], [92, 61, 12], [85, 71, 9],
+    // smooth rounded head following a clean round outline, plus a soft topknot
+    [55, 40, 30],                                  // main round head (the face sits on this)
+    [55, 19, 18],                                  // soft topknot, heavily overlapping so it blends smoothly
     // chest / body fluff
     [55, 90, 30], [33, 92, 18], [77, 92, 18], [40, 104, 16], [70, 104, 16], [55, 106, 24],
     // tail pom
@@ -67,10 +63,14 @@ function poodleSVG(color, halo) {
     <ellipse cx="66" cy="116" rx="8" ry="12" fill="${color}"/>
     <circle cx="45" cy="124" r="9" fill="${color}"/>
     <circle cx="66" cy="124" r="9" fill="${color}"/>
+    <!-- droopy ears as smooth ellipses (behind the head, so the outer edge is one clean curve) -->
+    <g fill="${color}">
+      <ellipse cx="19" cy="58" rx="12" ry="19"/>
+      <ellipse cx="91" cy="58" rx="12" ry="19"/>
+    </g>
     <!-- main fluff mass -->
     <g fill="${color}">${fluff}</g>
-    <!-- soft highlight: just a small sheen high on the crown + the chest; no bald dome -->
-    <circle cx="48" cy="20" r="12" fill="url(#${gid})"/>
+    <!-- soft body sheen only; no head highlight so the smooth head reads matte, not a bald dome -->
     <circle cx="55" cy="92" r="30" fill="url(#${gid})"/>
     <!-- muzzle -->
     <ellipse cx="55" cy="53" rx="15" ry="12" fill="rgba(255,255,255,.35)"/>
