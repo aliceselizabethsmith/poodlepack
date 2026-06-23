@@ -18,13 +18,18 @@ Each phase ends with a concrete artifact that becomes the input to the next phas
 
 ## How to run it
 
+> **Run it with the devcrew folder open as your workspace.** The crew writes output to
+> `projects/` *relative to the current working directory*, so if you launch Claude Code from some
+> other folder the generated project lands there instead. Open this repo first, then run.
+
 From inside this repo in Claude Code:
 
 ```
 Run the build-app workflow to build: "<your one-line spec>"
 ```
 
-Or invoke the workflow script directly. Built projects land in `projects/<name>/`.
+Built projects land in `projects/<name>/`. The workflow logs its output target at the start of the
+run — glance at it to confirm the files are going where you expect.
 
 ## Layout
 
