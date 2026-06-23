@@ -72,8 +72,12 @@ a clear purpose so a programmer can implement it without further questions.`,
   { label: 'cto:design', schema: DESIGN_SCHEMA },
 )
 
+// Output is written relative to the CURRENT WORKING DIRECTORY — i.e. the workspace root the
+// session was launched from. Run this with the devcrew folder open so `projects/` resolves here
+// and not into whatever folder you happened to start Claude Code in.
 const base = `projects/${design.projectName}`
 log(`Designing "${design.projectName}" in ${design.language} — ${design.files.length} file(s)`)
+log(`Output target: ${base}/  (relative to the workspace root — make sure that's the devcrew repo)`)
 
 // ── Phase 2: Code (one programmer per file, in parallel) ──────────────────────
 phase('Code')
@@ -90,7 +94,7 @@ All files in the project:
 ${fileList}
 
 Your job: implement EXACTLY this one file and write it to disk using the Write tool.
-  Path: ${base}/${file.path}   (relative to the devcrew repo root)
+  Path: ${base}/${file.path}   (relative to the current working directory / workspace root)
   Purpose: ${file.purpose}
 
 Write complete, working, idiomatic code — no TODOs, no placeholders, no stubbed functions.
