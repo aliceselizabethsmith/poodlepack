@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>Dev Crew · Kauai 🌺</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="scene">
+    <!-- sky -->
+    <div class="sun"></div>
+    <div class="cloud cloud-a">☁️</div>
+    <div class="cloud cloud-b">☁️</div>
+    <div class="ocean"></div>
+    <div class="palm palm-left">🌴</div>
+    <div class="palm palm-right">🌴</div>
+
+    <!-- header -->
+    <header id="hud">
+      <div class="title">Dev&nbsp;Crew <span class="lei">🌺</span> <span class="kauai">Kauai</span></div>
+      <div id="spec" class="spec">waiting for the crew to paddle out…</div>
+      <div id="phase" class="phase-badge">—</div>
+    </header>
+
+    <!-- the poodle crew lives here -->
+    <div id="stage"></div>
+
+    <!-- handoff tokens fly across this layer -->
+    <div id="fx"></div>
+
+    <!-- bottom ticker -->
+    <footer id="ticker"><span id="ticker-text">🐩 the pack is gathering on the beach…</span></footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
