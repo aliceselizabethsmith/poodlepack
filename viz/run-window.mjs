@@ -44,6 +44,8 @@ function cmdStart() {
   // Fresh run folder: wipe any previous events so the window starts clean.
   fs.rmSync(RUN_DIR, { recursive: true, force: true })
   fs.mkdirSync(EVENTS_DIR, { recursive: true })
+  fs.mkdirSync(path.join(RUN_DIR, 'questions'), { recursive: true })
+  fs.mkdirSync(path.join(RUN_DIR, 'answers'), { recursive: true })
 
   fs.writeFileSync(path.join(RUN_DIR, 'manifest.json'), JSON.stringify({
     spec, projectName: null, startedSeq: 0, cast: CAST, phases: PHASES,

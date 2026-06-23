@@ -6,5 +6,7 @@ contextBridge.exposeInMainWorld('devcrew', {
   onManifest: (cb) => ipcRenderer.on('manifest', (_e, data) => cb(data)),
   onEvent: (cb) => ipcRenderer.on('event', (_e, data) => cb(data)),
   onStatus: (cb) => ipcRenderer.on('status', (_e, data) => cb(data)),
+  onQuestion: (cb) => ipcRenderer.on('question', (_e, data) => cb(data)),
+  submitAnswer: (id, answer) => ipcRenderer.invoke('answer', { id, answer }),
   runDir: () => ipcRenderer.invoke('run-dir'),
 })
