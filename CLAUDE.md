@@ -73,6 +73,15 @@ node viz/run-window.mjs status --state done --ok true
 - **Preview without spending a build:** `node viz/demo.mjs` opens the window and streams a scripted
   poodle build. Great for tweaking the art/animation.
 
+### Calling it from any workspace
+
+A global skill `dev-crew` (`~/.claude/skills/dev-crew/SKILL.md`) makes the crew callable from any
+workspace, not just this repo. It runs the same ritual using absolute paths back here, so the window
+launches from this install while the built project + run folder land in **whatever workspace the build
+was invoked from** (`<cwd>/projects/<name>` and `<cwd>/.devcrew/run`). A global rule
+(`~/.claude/rules/dev-crew.md`) tells Claude to suggest the crew for new multi-file scaffolding tasks.
+When iterating on the workflow, still invoke it by `scriptPath` (not `name`) to avoid the cached copy.
+
 ### Gotcha: ELECTRON_RUN_AS_NODE
 
 Claude Code (and other Electron hosts) set `ELECTRON_RUN_AS_NODE=1`, which makes any spawned Electron
