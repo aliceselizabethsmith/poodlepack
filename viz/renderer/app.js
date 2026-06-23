@@ -8,12 +8,12 @@ const ROLE_ORDER = ['architect', 'coder', 'reviewer', 'tester', 'security', 'scr
 const CAST_STYLE = {
   // Opal & Starr are black standard poodles; Ruby is the reddish one. Each wears a
   // different-colored Hawaiian hibiscus (the `flower` color).
-  architect: { color: '#22222a', size: 1.40, flower: '#ff4d6d', label: 'architect' },
+  architect: { color: '#22222a', size: 1.40, flower: '#ff4d6d', label: 'architect', flowerTop: -28 },
   coder:     { color: '#7bdcb5', size: 1.00, flower: '#ff8c42', label: 'programmer' },
   reviewer:  { color: '#2b2b34', size: 1.12, flower: '#a06bff', label: 'reviewer' },
   tester:    { color: '#d96b63', size: 0.92, flower: '#ffcf33', label: 'tester' },
   security:  { color: '#9aa0b5', size: 1.12, flower: '#ff5db1', label: 'security' },
-  scribe:    { color: '#ffd98a', size: 0.82, flower: '#6fb7ff', label: 'scribe' },
+  scribe:    { color: '#ffb0d4', size: 0.82, flower: '#6fb7ff', label: 'scribe', flowerTop: 24 },
 }
 const FALLBACK_STYLE = { color: '#ffb3c6', size: 1.0, flower: '#ff8fb0', label: 'crew' }
 
@@ -25,6 +25,8 @@ const fxLayer = document.getElementById('fx')
 const chatlog = document.getElementById('chatlog')
 const qmodal = document.getElementById('qmodal')
 const answeredQ = new Set()
+const questionQueue = []
+let qActive = false
 
 const chars = {}   // role -> { el, pup, persona, style }
 let svgSeq = 0
@@ -121,7 +123,7 @@ function ensureChar(role, persona) {
   el.style.setProperty('order', String(ROLE_ORDER.indexOf(role) + 1 || 99))
   el.innerHTML = `
     <div class="ring"></div>
-    <span class="accessory">${flowerSVG(style.flower)}</span>
+    <span class="accessory"${style.flowerTop != null ? ` style="top:${style.flowerTop}px"` : ''}>${flowerSVG(style.flower)}</span>
     <div class="pup" style="--s: ${style.size}">${poodleSVG(style.color)}</div>
     <div class="nameplate"><span class="pname">${persona || role}</span>
       <span class="role">${style.label}</span></div>`
@@ -154,7 +156,7 @@ function speak(role, text, kind) {
 
 /* append a line to the scrolling conversation history (translucent, auto-scrolls) */
 function addLog(role, persona, text, phase) {
-  if (!chatlog || !text) return
+  if (!chatlog || !text || !text.trim()) return
   const style = CAST_STYLE[role] || FALLBACK_STYLE
   const col = style.flower || style.color
   const msg = document.createElement('div')
@@ -219,8 +221,18 @@ function celebrate(ok) {
 }
 
 /* ── question modal: a poodle asks, the user answers ──────────────────────── */
-function showQuestion(q) {
+// Questions are queued so several (e.g. interface + storage) show one at a time, in order.
+function enqueueQuestion(q) {
   if (!qmodal || !q || !q.id || answeredQ.has(q.id)) return
+  if (questionQueue.some(x => x.id === q.id)) return
+  questionQueue.push(q)
+  if (!qActive) renderNextQuestion()
+}
+
+function renderNextQuestion() {
+  const q = questionQueue.shift()
+  if (!q) { qActive = false; qmodal.classList.add('hidden'); qmodal.innerHTML = ''; return }
+  qActive = true
   const style = CAST_STYLE[q.role] || FALLBACK_STYLE
   const persona = q.persona || q.role || 'Crew'
   spotlight(q.role)
@@ -231,8 +243,7 @@ function showQuestion(q) {
     answeredQ.add(q.id)
     window.devcrew.submitAnswer(q.id, answer)
     addLog(q.role, 'You', `→ ${answer}`, 'Answer')
-    qmodal.classList.add('hidden')
-    qmodal.innerHTML = ''
+    renderNextQuestion() // show the next queued question, or hide if none
   }
 
   const card = document.createElement('div')
@@ -311,7 +322,7 @@ window.devcrew.onEvent((evt) => {
   tickerEl.textContent = `🌺 ${evt.persona || evt.role} · ${evt.phase || ''} ${tag} ${evt.bubble || ''}`
 })
 
-window.devcrew.onQuestion(showQuestion)
+window.devcrew.onQuestion(enqueueQuestion)
 
 window.devcrew.onStatus((s) => {
   if (s.state === 'done') celebrate(s.ok)

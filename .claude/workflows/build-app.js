@@ -97,11 +97,14 @@ function clarifyBlock() {
   if (!runDir) return ''
   return `
 
-─── ASK THE USER — ONLY IF THE SPEC IS GENUINELY AMBIGUOUS ───
-If the spec leaves a decision that would materially change the architecture (e.g. CLI vs web app,
-which datastore, or an unclear target language), you MAY ask the user up to 2 clarifying questions
-through the crew window BEFORE you design. If the spec is already clear enough, SKIP this entirely and
-just design — do not ask for the sake of asking.
+─── ASK THE USER ABOUT ARCHITECTURE-DEFINING CHOICES THE SPEC LEAVES OPEN ───
+Before you design, check whether the spec pins down the decisions that shape the whole project. Ask the
+user up to 2 clarifying questions through the crew window when such a decision is unstated:
+  - In particular, if the spec does NOT state the interface/platform, ASK whether it should be a
+    command-line tool, a web app, or a desktop app — do not just assume one.
+  - Likewise ask about another defining choice only if it's genuinely open and important (e.g. where
+    data is stored) — at most 2 questions total.
+If the spec already pins these down, SKIP this entirely and just design — don't ask for the sake of it.
 
 For each question, choose a short id ("q1", "q2") and:
   1. Write the question with the Write tool:

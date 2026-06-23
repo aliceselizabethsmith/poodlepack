@@ -98,6 +98,8 @@ function startWatching() {
     qfiles.sort()
     for (const name of qfiles) {
       if (seenQuestions.has(name)) continue
+      // already answered (e.g. the window was reloaded mid-run)? don't re-ask.
+      if (fs.existsSync(path.join(ANSWERS_DIR, name))) { seenQuestions.add(name); continue }
       const q = await readJson(path.join(QUESTIONS_DIR, name))
       if (!q) continue
       seenQuestions.add(name)
