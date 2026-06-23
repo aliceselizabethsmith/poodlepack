@@ -38,10 +38,10 @@ function poodleSVG(color, halo) {
     <ellipse cx="55" cy="-18" rx="25" ry="7" fill="none" stroke="#ffd95a" stroke-width="5" opacity=".9"/>
     <ellipse cx="55" cy="-18" rx="25" ry="7" fill="none" stroke="#fff7c8" stroke-width="1.8"/>` : ''
   const fluff = [
-    // topknot poof — big and fluffy
-    [55, 8, 15], [42, 15, 12], [68, 15, 12], [55, 18, 14], [47, 5, 10], [63, 5, 10], [55, -1, 10],
-    // head
-    [55, 42, 29],
+    // poofy but rounded head — full coverage with a gentle, mostly-circular outline
+    [55, 34, 31],                                  // big round head base (the face sits on this)
+    [55, 13, 14], [41, 19, 12], [69, 19, 12],      // soft rounded crown poofs
+    [30, 35, 12], [80, 35, 12],                    // gentle side fluff
     // ears (droopy poufs each side)
     [21, 47, 13], [18, 61, 12], [25, 71, 9],
     [89, 47, 13], [92, 61, 12], [85, 71, 9],
@@ -69,8 +69,8 @@ function poodleSVG(color, halo) {
     <circle cx="66" cy="124" r="9" fill="${color}"/>
     <!-- main fluff mass -->
     <g fill="${color}">${fluff}</g>
-    <!-- soft highlight -->
-    <circle cx="55" cy="42" r="29" fill="url(#${gid})"/>
+    <!-- soft highlight: just a small sheen high on the crown + the chest; no bald dome -->
+    <circle cx="48" cy="20" r="12" fill="url(#${gid})"/>
     <circle cx="55" cy="92" r="30" fill="url(#${gid})"/>
     <!-- muzzle -->
     <ellipse cx="55" cy="53" rx="15" ry="12" fill="rgba(255,255,255,.35)"/>
