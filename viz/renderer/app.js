@@ -1,0 +1,203 @@
+/* Renderer: turns the crew's event stream into a beach full of poodles.
+   Presentation (fur color, size, accessory) is owned here; the manifest just says
+   who is in the cast. */
+
+const ROLE_ORDER = ['architect', 'coder', 'reviewer', 'tester', 'security', 'scribe']
+
+// Each role is a distinctly colored + sized poodle.
+const CAST_STYLE = {
+  // Opal — large black standard poodle, the lead. Starr — black standard poodle, the reviewer.
+  architect: { color: '#22222a', size: 1.30, accessory: '🌺', label: 'architect' },
+  coder:     { color: '#7bdcb5', size: 1.00, accessory: '🏄', label: 'programmer' },
+  reviewer:  { color: '#2b2b34', size: 1.22, accessory: '🔍', label: 'reviewer' },
+  tester:    { color: '#6ec6ff', size: 0.90, accessory: '🌊', label: 'tester' },
+  security:  { color: '#9aa0b5', size: 1.12, accessory: '🦉', label: 'security' },
+  scribe:    { color: '#ffd98a', size: 0.82, accessory: '🌙', label: 'scribe' },
+}
+const FALLBACK_STYLE = { color: '#ffb3c6', size: 1.0, accessory: '🐩', label: 'crew' }
+
+const stage = document.getElementById('stage')
+const phaseBadge = document.getElementById('phase')
+const specEl = document.getElementById('spec')
+const tickerEl = document.getElementById('ticker-text')
+const fxLayer = document.getElementById('fx')
+
+const chars = {}   // role -> { el, pup, persona, style }
+let svgSeq = 0
+
+/* ── poodle artwork (pure SVG, built from fluffy overlapping circles) ──────── */
+function poodleSVG(color) {
+  const gid = `hl${svgSeq++}`
+  const fluff = [
+    // topknot pouf
+    [55, 13, 12], [45, 18, 9], [65, 18, 9],
+    // head
+    [55, 42, 29],
+    // ears (droopy poufs each side)
+    [21, 47, 13], [18, 61, 12], [25, 71, 9],
+    [89, 47, 13], [92, 61, 12], [85, 71, 9],
+    // chest / body fluff
+    [55, 90, 30], [33, 92, 18], [77, 92, 18], [40, 104, 16], [70, 104, 16], [55, 106, 24],
+    // tail pom
+    [93, 84, 11], [99, 78, 7],
+  ].map(([cx, cy, r]) => `<circle cx="${cx}" cy="${cy}" r="${r}"/>`).join('')
+
+  return `<svg viewBox="0 0 110 132" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="${gid}" cx="38%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity=".6"/>
+        <stop offset="55%" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <!-- ground shadow -->
+    <ellipse cx="55" cy="126" rx="40" ry="7" fill="rgba(0,0,0,.14)"/>
+    <!-- haunch base -->
+    <ellipse cx="55" cy="108" rx="42" ry="20" fill="${color}"/>
+    <!-- legs + ankle poms -->
+    <ellipse cx="45" cy="116" rx="8" ry="12" fill="${color}"/>
+    <ellipse cx="66" cy="116" rx="8" ry="12" fill="${color}"/>
+    <circle cx="45" cy="124" r="9" fill="${color}"/>
+    <circle cx="66" cy="124" r="9" fill="${color}"/>
+    <!-- main fluff mass -->
+    <g fill="${color}">${fluff}</g>
+    <!-- soft highlight -->
+    <circle cx="55" cy="42" r="29" fill="url(#${gid})"/>
+    <circle cx="55" cy="92" r="30" fill="url(#${gid})"/>
+    <!-- muzzle -->
+    <ellipse cx="55" cy="53" rx="15" ry="12" fill="rgba(255,255,255,.35)"/>
+    <!-- blush -->
+    <ellipse cx="37" cy="52" rx="5.5" ry="3.4" fill="#ff8fb0" opacity=".55"/>
+    <ellipse cx="73" cy="52" rx="5.5" ry="3.4" fill="#ff8fb0" opacity=".55"/>
+    <!-- eyes (light rim keeps them readable on black fur too) -->
+    <g stroke="rgba(255,255,255,.28)" stroke-width="1">
+      <ellipse cx="45" cy="44" rx="6.2" ry="7.7" fill="#2c2622"/>
+      <ellipse cx="65" cy="44" rx="6.2" ry="7.7" fill="#2c2622"/>
+    </g>
+    <g>
+      <circle cx="43" cy="41.5" r="2.4" fill="#fff"/>
+      <circle cx="63" cy="41.5" r="2.4" fill="#fff"/>
+      <circle cx="47" cy="46.5" r="1.1" fill="#fff" opacity=".75"/>
+      <circle cx="67" cy="46.5" r="1.1" fill="#fff" opacity=".75"/>
+    </g>
+    <!-- nose + mouth -->
+    <ellipse cx="55" cy="50" rx="4.6" ry="3.6" fill="#4a3b34"/>
+    <circle cx="53.6" cy="49" r="1.1" fill="#fff" opacity=".6"/>
+    <path d="M55 53 Q55 58 50 59 M55 53 Q55 58 60 59" stroke="#4a3b34"
+          stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  </svg>`
+}
+
+/* ── build a poodle on the stage ──────────────────────────────────────────── */
+function ensureChar(role, persona) {
+  if (chars[role]) {
+    if (persona && chars[role].persona !== persona) {
+      chars[role].persona = persona
+      chars[role].el.querySelector('.pname').textContent = persona
+    }
+    return chars[role]
+  }
+  const style = CAST_STYLE[role] || FALLBACK_STYLE
+
+  const el = document.createElement('div')
+  el.className = 'poodle'
+  el.style.setProperty('order', String(ROLE_ORDER.indexOf(role) + 1 || 99))
+  el.innerHTML = `
+    <div class="ring"></div>
+    <span class="accessory">${style.accessory}</span>
+    <div class="pup" style="transform: scale(${style.size})">${poodleSVG(style.color)}</div>
+    <div class="nameplate"><span class="pname">${persona || role}</span>
+      <span class="role">${style.label}</span></div>`
+  stage.appendChild(el)
+
+  // keep stage in role order even if events arrive out of order
+  ;[...stage.children]
+    .sort((a, b) => (+a.style.order || 99) - (+b.style.order || 99))
+    .forEach(node => stage.appendChild(node))
+
+  chars[role] = { el, pup: el.querySelector('.pup'), persona, style }
+  return chars[role]
+}
+
+/* ── speech bubbles ───────────────────────────────────────────────────────── */
+function speak(role, text, kind) {
+  const c = chars[role]
+  if (!c) return
+  c.el.querySelector('.bubble')?.remove()
+  const b = document.createElement('div')
+  b.className = `bubble ${kind || ''}`
+  b.textContent = text
+  c.el.appendChild(b)
+  setTimeout(() => { b.classList.add('fade'); setTimeout(() => b.remove(), 400) }, 4800)
+}
+
+function spotlight(role) {
+  for (const r in chars) chars[r].el.classList.toggle('dim', r !== role)
+  chars[role]?.el.classList.add('active')
+  for (const r in chars) if (r !== role) chars[r].el.classList.remove('active')
+}
+
+/* ── flying handoff token (one poodle passes the work to the next) ─────────── */
+function handoff(fromRole, toRole, emoji) {
+  const from = chars[fromRole]?.pup, to = chars[toRole]?.pup
+  if (!from || !to) return
+  const scene = document.getElementById('scene').getBoundingClientRect()
+  const a = from.getBoundingClientRect(), b = to.getBoundingClientRect()
+  const tok = document.createElement('div')
+  tok.className = 'token'
+  tok.textContent = emoji || '🐚'
+  tok.style.left = `${a.left - scene.left + a.width / 2 - 13}px`
+  tok.style.top = `${a.top - scene.top + 10}px`
+  fxLayer.appendChild(tok)
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    tok.style.left = `${b.left - scene.left + b.width / 2 - 13}px`
+    tok.style.top = `${b.top - scene.top + 10}px`
+  }))
+  setTimeout(() => { tok.style.opacity = '0' }, 1100)
+  setTimeout(() => tok.remove(), 1500)
+}
+
+/* ── finale ───────────────────────────────────────────────────────────────── */
+function celebrate(ok) {
+  for (const r in chars) { chars[r].el.classList.remove('dim'); chars[r].el.classList.add('cheer') }
+  phaseBadge.textContent = ok === false ? 'finished (with notes)' : 'shipped! 🎉'
+  const pieces = ['🌺', '🐩', '🎉', '🌴', '⭐', '🐚', '🦩']
+  for (let i = 0; i < 46; i++) {
+    const c = document.createElement('div')
+    c.className = 'confetti'
+    c.textContent = pieces[i % pieces.length]
+    c.style.left = `${(i * 2.2) % 100}%`
+    c.style.animationDuration = `${2.4 + (i % 5) * 0.5}s`
+    c.style.animationDelay = `${(i % 7) * 0.12}s`
+    document.getElementById('scene').appendChild(c)
+    setTimeout(() => c.remove(), 6000)
+  }
+}
+
+/* ── wire the event streams from main ─────────────────────────────────────── */
+window.devcrew.onManifest((m) => {
+  if (m.spec) specEl.textContent = m.spec
+  const cast = Array.isArray(m.cast) ? m.cast : []
+  cast.slice().sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role))
+      .forEach(c => ensureChar(c.role, c.persona))
+})
+
+window.devcrew.onEvent((evt) => {
+  if (!evt || !evt.role) return
+  const c = ensureChar(evt.role, evt.persona)
+  if (evt.projectName) specEl.textContent = `building “${evt.projectName}” 🛠️`
+  if (evt.phase) phaseBadge.textContent = evt.phase
+
+  spotlight(evt.role)
+  if (evt.bubble) speak(evt.role, evt.bubble, evt.kind)
+
+  if (evt.kind === 'done' && evt.to) {
+    handoff(evt.role, evt.to, c.style.accessory)
+  }
+  const tag = evt.kind === 'done' ? '✓' : '…'
+  tickerEl.textContent = `${c.style.accessory} ${evt.persona || evt.role} · ${evt.phase || ''} ${tag} ${evt.bubble || ''}`
+})
+
+window.devcrew.onStatus((s) => {
+  if (s.state === 'done') celebrate(s.ok)
+  else if (s.state === 'error') { phaseBadge.textContent = 'uh-oh 🌧️'; tickerEl.textContent = s.message || 'the build hit a snag.' }
+})

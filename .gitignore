@@ -21,3 +21,8 @@ venv/
 
 # Node (in case built apps drop deps here)
 node_modules/
+
+# Dev Crew window runtime — the live run folder + logs are regenerated each build.
+# Keep the protocol doc tracked; ignore everything else under .devcrew/.
+.devcrew/*
+!.devcrew/PROTOCOL.md
