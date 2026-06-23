@@ -51,6 +51,8 @@ const pad4 = n => String(n).padStart(4, '0')
 // fresh folder
 fs.rmSync(RUN_DIR, { recursive: true, force: true })
 fs.mkdirSync(EVENTS_DIR, { recursive: true })
+fs.mkdirSync(path.join(RUN_DIR, 'questions'), { recursive: true })
+fs.mkdirSync(path.join(RUN_DIR, 'answers'), { recursive: true })
 fs.writeFileSync(path.join(RUN_DIR, 'manifest.json'),
   JSON.stringify({ spec: SPEC, projectName: null, startedSeq: 0, cast: CAST, phases: PHASES }, null, 2))
 fs.writeFileSync(path.join(RUN_DIR, 'status.json'), JSON.stringify({ state: 'running' }))
@@ -81,6 +83,16 @@ SCRIPT.forEach((beat, i) => {
     process.stdout.write(`▶ ${personaOf(beat.role)} ${beat.kind}: ${beat.bubble}\n`)
   }, 2500 + i * 1300)
 })
+
+// demonstrate the question pop-out shortly after Opal starts
+setTimeout(() => {
+  fs.writeFileSync(path.join(RUN_DIR, 'questions', 'q1.json'), JSON.stringify({
+    id: 'q1', persona: 'Opal', role: 'architect',
+    text: 'Should the password generator be a CLI or a web app?',
+    options: ['CLI', 'Web app'],
+  }))
+  process.stdout.write('❓ Opal asks: CLI or Web app? (answer it in the window)\n')
+}, 3400)
 
 // finale
 setTimeout(() => {

@@ -91,6 +91,34 @@ NEVER edit or delete an event file — only create new ones.
 ───────────────────────────────────────────────────────────────────────────────`
 }
 
+// When the window is attached, Opal may pause during Design to ask the user a clarifying
+// question. The window pops a modal; the user's answer comes back as a file we poll for.
+function clarifyBlock() {
+  if (!runDir) return ''
+  return `
+
+─── ASK THE USER — ONLY IF THE SPEC IS GENUINELY AMBIGUOUS ───
+If the spec leaves a decision that would materially change the architecture (e.g. CLI vs web app,
+which datastore, or an unclear target language), you MAY ask the user up to 2 clarifying questions
+through the crew window BEFORE you design. If the spec is already clear enough, SKIP this entirely and
+just design — do not ask for the sake of asking.
+
+For each question, choose a short id ("q1", "q2") and:
+  1. Write the question with the Write tool:
+     Path: ${runDir}/questions/<id>.json
+     { "id": "<id>", "persona": "Opal", "role": "architect",
+       "text": "<your question>", "options": ["<short option>", "<short option>"] }
+     Offer 2-4 concrete options. The user can also type a free-text answer, so don't try to enumerate
+     everything.
+  2. Wait for the answer with the Bash tool (poll up to ~3 minutes):
+     for i in $(seq 1 60); do [ -f "${runDir}/answers/<id>.json" ] && break; sleep 3; done
+     Then read ${runDir}/answers/<id>.json — the "answer" field holds the user's choice.
+  3. If the file never appears (timeout), proceed with the most sensible default and say so in your
+     design summary.
+Incorporate every answer you receive into the design you return.
+───────────────────────────────────────────────────────────────────────────────`
+}
+
 const DESIGN_SCHEMA = {
   type: 'object',
   required: ['projectName', 'language', 'summary', 'files'],
@@ -191,7 +219,7 @@ heavy dependencies. Keep the project small and focused — only the files genuin
 code to be testable (clear functions/modules a tester can import).
 
 Return the design as structured output. projectName must be kebab-case. List every source file with a
-clear purpose so a programmer can implement it without further questions.${
+clear purpose so a programmer can implement it without further questions.${clarifyBlock()}${
     emitBlock({ seq: designSeq, role: 'architect', phase: 'Design',
       extraDone: ',\n     "projectName": "<the kebab-case projectName you chose>"' })}`,
   { label: 'opal:design', schema: DESIGN_SCHEMA },

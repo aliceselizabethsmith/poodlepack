@@ -19,6 +19,8 @@ function resolveRunDir() {
 
 const RUN_DIR = resolveRunDir()
 const EVENTS_DIR = path.join(RUN_DIR, 'events')
+const QUESTIONS_DIR = path.join(RUN_DIR, 'questions')
+const ANSWERS_DIR = path.join(RUN_DIR, 'answers')
 const MANIFEST_FILE = path.join(RUN_DIR, 'manifest.json')
 const STATUS_FILE = path.join(RUN_DIR, 'status.json')
 
@@ -54,6 +56,7 @@ async function readJson(file) {
 
 function startWatching() {
   const seenEvents = new Set()
+  const seenQuestions = new Set()
   let manifestSent = false
   let lastStatus = null
 
@@ -85,6 +88,22 @@ function startWatching() {
       win.webContents.send('event', evt)
     }
 
+    // Questions: forward each new question so the window can pop a modal.
+    let qfiles = []
+    try {
+      qfiles = (await fsp.readdir(QUESTIONS_DIR)).filter(f => f.endsWith('.json'))
+    } catch {
+      qfiles = [] // questions dir not created yet
+    }
+    qfiles.sort()
+    for (const name of qfiles) {
+      if (seenQuestions.has(name)) continue
+      const q = await readJson(path.join(QUESTIONS_DIR, name))
+      if (!q) continue
+      seenQuestions.add(name)
+      win.webContents.send('question', q)
+    }
+
     // Status: forward 'done'/'error' transitions so the window can celebrate.
     const status = await readJson(STATUS_FILE)
     if (status && status.state && status.state !== lastStatus) {
@@ -100,6 +119,17 @@ function startWatching() {
 
 // Let the renderer ask where it's watching (handy for the header).
 ipcMain.handle('run-dir', () => RUN_DIR)
+
+// The renderer submits the user's answer; we write it where the waiting agent polls.
+ipcMain.handle('answer', async (_e, payload) => {
+  if (!payload || !payload.id) return false
+  await fsp.mkdir(ANSWERS_DIR, { recursive: true })
+  await fsp.writeFile(
+    path.join(ANSWERS_DIR, `${payload.id}.json`),
+    JSON.stringify({ id: payload.id, answer: payload.answer }),
+  )
+  return true
+})
 
 app.whenReady().then(createWindow)
 app.on('window-all-closed', () => app.quit())

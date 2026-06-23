@@ -54,7 +54,7 @@ parallel coders never collide and the watcher never reads a half-written file tw
   "persona": "Sylvie",
   "phase": "Code",
   "kind": "start",                // "start" when the agent begins, "done" when finished
-  "bubble": "Got the design — paddling out to code src/main.py! 🏄",
+  "bubble": "Implementing generator.py using the secrets module for secure RNG.",
   "to": "reviewer",               // optional: who this beat hands off to (draws an arrow)
   "file": "src/main.py",          // optional: the artifact this beat concerns
   "ok": true                      // optional, on "done": did the work succeed (tests pass, etc.)
@@ -63,6 +63,25 @@ parallel coders never collide and the watcher never reads a half-written file tw
 
 ### Rules for agents
 - Write a `start` event the moment you begin, then do the work, then write a `done` event.
-- Keep `bubble` short (one sentence), in-character, kawaii-friendly. This is the speech bubble.
+- Keep `bubble` to one short, factual status line (file, approach, counts, result). Not cute — a
+  developer should be able to read it and know exactly what happened.
 - Never edit or delete an existing event file. Only ever create new ones.
 - Write events into the run folder's `events/` directory using the path the orchestrator gives you.
+
+## questions & answers (interactive pop-out)
+
+A poodle (currently only Opal, during Design) may pause to ask the user a question. This is the one
+place data flows back from the window to an agent.
+
+1. The agent writes a question file `questions/<id>.json`:
+   ```json
+   { "id": "q1", "persona": "Opal", "role": "architect",
+     "text": "Should this be a CLI or a web app?", "options": ["CLI", "Web app"] }
+   ```
+2. The window pops a modal with the options as buttons plus a free-text box. When the user answers,
+   the Electron main process writes `answers/<id>.json`:
+   ```json
+   { "id": "q1", "answer": "CLI" }
+   ```
+3. The agent polls for `answers/<id>.json` (Bash loop, ~3-minute timeout) and incorporates the answer.
+   On timeout it proceeds with a sensible default. So a missed question never hangs the build.

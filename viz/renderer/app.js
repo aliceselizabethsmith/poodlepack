@@ -23,6 +23,8 @@ const specEl = document.getElementById('spec')
 const tickerEl = document.getElementById('ticker-text')
 const fxLayer = document.getElementById('fx')
 const chatlog = document.getElementById('chatlog')
+const qmodal = document.getElementById('qmodal')
+const answeredQ = new Set()
 
 const chars = {}   // role -> { el, pup, persona, style }
 let svgSeq = 0
@@ -216,6 +218,72 @@ function celebrate(ok) {
   }
 }
 
+/* ── question modal: a poodle asks, the user answers ──────────────────────── */
+function showQuestion(q) {
+  if (!qmodal || !q || !q.id || answeredQ.has(q.id)) return
+  const style = CAST_STYLE[q.role] || FALLBACK_STYLE
+  const persona = q.persona || q.role || 'Crew'
+  spotlight(q.role)
+  addLog(q.role, persona, `❓ ${q.text || ''}`, 'Question')
+
+  const finish = (answer) => {
+    if (!answer || answeredQ.has(q.id)) return
+    answeredQ.add(q.id)
+    window.devcrew.submitAnswer(q.id, answer)
+    addLog(q.role, 'You', `→ ${answer}`, 'Answer')
+    qmodal.classList.add('hidden')
+    qmodal.innerHTML = ''
+  }
+
+  const card = document.createElement('div')
+  card.className = 'qcard'
+
+  const head = document.createElement('div')
+  head.className = 'qhead'
+  head.innerHTML = `<span class="qflower">${flowerSVG(style.flower)}</span>` +
+    `<span class="qwho" style="color:${style.flower}"></span>`
+  head.querySelector('.qwho').innerHTML = `${persona} <small>has a question</small>`
+  card.appendChild(head)
+
+  const text = document.createElement('div')
+  text.className = 'qtext'
+  text.textContent = q.text || 'Which option do you prefer?'
+  card.appendChild(text)
+
+  if (Array.isArray(q.options) && q.options.length) {
+    const opts = document.createElement('div')
+    opts.className = 'qopts'
+    q.options.forEach(opt => {
+      const btn = document.createElement('button')
+      btn.className = 'qopt'
+      btn.textContent = opt
+      btn.onclick = () => finish(opt)
+      opts.appendChild(btn)
+    })
+    card.appendChild(opts)
+  }
+
+  const row = document.createElement('div')
+  row.className = 'qrow'
+  const input = document.createElement('input')
+  input.className = 'qinput'
+  input.type = 'text'
+  input.placeholder = 'or type your own answer…'
+  input.onkeydown = (e) => { if (e.key === 'Enter') finish(input.value.trim()) }
+  const send = document.createElement('button')
+  send.className = 'qsend'
+  send.textContent = 'Send'
+  send.onclick = () => finish(input.value.trim())
+  row.appendChild(input)
+  row.appendChild(send)
+  card.appendChild(row)
+
+  qmodal.innerHTML = ''
+  qmodal.appendChild(card)
+  qmodal.classList.remove('hidden')
+  setTimeout(() => input.focus(), 50)
+}
+
 /* ── wire the event streams from main ─────────────────────────────────────── */
 window.devcrew.onManifest((m) => {
   if (m.spec) specEl.textContent = m.spec
@@ -242,6 +310,8 @@ window.devcrew.onEvent((evt) => {
   const tag = evt.kind === 'done' ? '✓' : '…'
   tickerEl.textContent = `🌺 ${evt.persona || evt.role} · ${evt.phase || ''} ${tag} ${evt.bubble || ''}`
 })
+
+window.devcrew.onQuestion(showQuestion)
 
 window.devcrew.onStatus((s) => {
   if (s.state === 'done') celebrate(s.ok)
