@@ -150,7 +150,7 @@ body {
   position: relative;
   display: flex; flex-direction: column; align-items: center;
   transform-origin: bottom center;
-  animation: bob 9s ease-in-out infinite; /* slow, shallow breathing motion while holding */
+  animation: bob 3.2s ease-in-out infinite;
   transition: filter .3s ease;
 }
 /* idle poodles keep their full color — only their nameplate dims */
@@ -158,15 +158,14 @@ body {
 .poodle.active { z-index: 9; }
 .poodle.active .pup { animation: dig .42s ease-in-out infinite; }
 .poodle.active .ring { opacity: 1; transform: scale(1); }
-/* a short, finite happy hop on shipping — then they settle, no endless bouncing */
-.poodle.cheer .pup { animation: hop .6s ease-in-out 4; }
-@keyframes bob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+.poodle.cheer .pup { animation: hop .5s ease infinite; }
+@keyframes bob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 /* keep the per-poodle scale (var --s) through the active/cheer animations so size never resets */
 /* "dig": an active poodle dips down and paws side to side, like digging in the sand */
 @keyframes dig   { 0%,100% { transform: scale(var(--s,1)) translateY(0) rotate(0);}
                    35% { transform: scale(var(--s,1)) translateY(4px) rotate(-3deg);}
                    70% { transform: scale(var(--s,1)) translateY(5px) rotate(3deg);} }
-@keyframes hop   { 0%,100% { transform: scale(var(--s,1)) translateY(0);} 45% { transform: scale(var(--s,1)) translateY(-12px);} }
+@keyframes hop   { 0%,100% { transform: scale(var(--s,1)) translateY(0);} 40% { transform: scale(var(--s,1)) translateY(-15px);} }
 
 /* little sand puffs kicked up while a poodle digs */
 .sandpuff {
@@ -211,7 +210,7 @@ body {
 /* hibiscus tucked onto the head by the ear */
 .accessory {
   position: absolute; top: 6px; right: 22px; z-index: 3;
-  animation: bob 6s ease-in-out infinite;
+  animation: bob 2.6s ease-in-out infinite;
   filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
 }
 .accessory svg { width: 27px; height: 27px; display: block; }
