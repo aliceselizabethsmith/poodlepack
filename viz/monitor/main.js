@@ -33,7 +33,7 @@ async function loadScanner() {
 function createWindow() {
   win = new BrowserWindow({
     width: 1040, height: 620, minWidth: 720, minHeight: 460,
-    title: 'Dev Crew · Activity 🐩',
+    title: 'Poodle Vision 🐩',
     backgroundColor: '#ffd9a0',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -76,7 +76,9 @@ function startPolling() {
     // de-dupe (an agent could be added twice by the two loops), newest first
     const byId = new Map()
     for (const r of roster) if (!byId.has(r.agentId)) byId.set(r.agentId, r)
-    win.webContents.send('roster', [...byId.values()].slice(0, 12))
+    // 16 = the realistic ceiling (a workflow fan-out caps at min(16, cores-2));
+    // the renderer auto-fits them, and overflow beyond this scrolls.
+    win.webContents.send('roster', [...byId.values()].slice(0, 16))
   }
 
   const timer = setInterval(tick, 1400)

@@ -187,6 +187,52 @@ window.kennel.onRoster((roster) => {
   const latest = roster[0]
   tickerEl.textContent = latest ? `🌺 ${latest.kind} · ${latest.action}` : '🐩 watching for background agents…'
   document.body.classList.toggle('idle', live.size === 0)
-  // shrink the cards when the kennel gets crowded so everyone stays visible
-  stage.classList.toggle('compact', live.size > 6)
+  fitStage()
 })
+
+// scale every card down by a uniform factor until the whole kennel fits without
+// scrolling — so no poodle is ever cut off, whatever the count or window size
+function fitStage() {
+  stage.style.setProperty('--cs', '1')
+  if (stage.scrollHeight <= stage.clientHeight + 1) return // fits at full size
+  let lo = 0.4, hi = 1
+  for (let i = 0; i < 8; i++) {
+    const mid = (lo + hi) / 2
+    stage.style.setProperty('--cs', String(mid))
+    if (stage.scrollHeight <= stage.clientHeight + 1) lo = mid
+    else hi = mid
+  }
+  stage.style.setProperty('--cs', String(lo))
+}
+window.addEventListener('resize', fitStage)
+
+/* every actively-working poodle kicks up a little sandstorm at its feet */
+const SAND_COLORS = ['#f4dba6', '#e8b96f', '#f7e7c0', '#d99a55', '#ffe0a3', '#caa15f', '#f3c79b', '#e9a86b']
+setInterval(() => {
+  if (!fxLayer) return
+  const pups = document.querySelectorAll('.poodle.active .pup')
+  if (!pups.length) return
+  const scene = document.getElementById('scene').getBoundingClientRect()
+  pups.forEach((pup, idx) => {
+    if (idx > 11) return // cap the work when the kennel is packed
+    const r = pup.getBoundingClientRect()
+    const baseX = r.left - scene.left + r.width / 2
+    const baseY = r.bottom - scene.top - 8
+    const count = 2 + Math.floor(Math.random() * 2)
+    for (let i = 0; i < count; i++) {
+      const puff = document.createElement('div')
+      puff.className = 'sandpuff'
+      const off = (Math.random() - 0.5) * (r.width * 0.95)
+      const size = 5 + Math.random() * 9
+      const color = SAND_COLORS[Math.floor(Math.random() * SAND_COLORS.length)]
+      puff.style.width = puff.style.height = `${size}px`
+      puff.style.background = `radial-gradient(circle at 40% 35%, #fff3d6, ${color})`
+      puff.style.left = `${baseX + off - size / 2}px`
+      puff.style.top = `${baseY + (Math.random() - 0.5) * 8}px`
+      puff.style.setProperty('--dx', `${off * 1.2}px`)
+      puff.style.setProperty('--dy', `${-22 - Math.random() * 30}px`)
+      fxLayer.appendChild(puff)
+      setTimeout(() => puff.remove(), 800)
+    }
+  })
+}, 180)
