@@ -111,6 +111,7 @@ body {
   width: 24%; max-width: 340px;
   max-height: 34%;
   overflow-y: auto;
+  overflow-x: hidden;       /* never show a horizontal scrollbar */
   display: flex; flex-direction: column; gap: 5px;
   padding: 4px 6px;
   z-index: 8;
@@ -123,6 +124,7 @@ body {
   padding: 4px 9px;
   font-size: 11.5px; line-height: 1.3;
   color: #45372b;
+  overflow-wrap: anywhere;  /* wrap long paths/tokens instead of overflowing sideways */
   box-shadow: 0 2px 5px rgba(0, 0, 0, .07);
   backdrop-filter: blur(2px);
   animation: logIn .3s ease;
@@ -153,13 +155,28 @@ body {
 }
 .poodle.dim { filter: saturate(.55) brightness(.92) opacity(.8); }
 .poodle.active { z-index: 9; }
-.poodle.active .pup { animation: wiggle .5s ease-in-out infinite; }
+.poodle.active .pup { animation: dig .42s ease-in-out infinite; }
 .poodle.active .ring { opacity: 1; transform: scale(1); }
 .poodle.cheer .pup { animation: hop .5s ease infinite; }
 @keyframes bob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 /* keep the per-poodle scale (var --s) through the active/cheer animations so size never resets */
-@keyframes wiggle{ 0%,100% { transform: scale(var(--s,1)) rotate(-3deg);} 50% { transform: scale(var(--s,1)) rotate(3deg);} }
+/* "dig": an active poodle dips down and paws side to side, like digging in the sand */
+@keyframes dig   { 0%,100% { transform: scale(var(--s,1)) translateY(0) rotate(0);}
+                   35% { transform: scale(var(--s,1)) translateY(4px) rotate(-3deg);}
+                   70% { transform: scale(var(--s,1)) translateY(5px) rotate(3deg);} }
 @keyframes hop   { 0%,100% { transform: scale(var(--s,1)) translateY(0);} 40% { transform: scale(var(--s,1)) translateY(-15px);} }
+
+/* little sand puffs kicked up while a poodle digs */
+.sandpuff {
+  position: absolute; width: 11px; height: 11px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #f4dba6, #e0b878);
+  pointer-events: none; z-index: 4;
+  animation: puff .7s ease-out forwards;
+}
+@keyframes puff {
+  0%   { transform: translate(0, 0) scale(.4); opacity: .95; }
+  100% { transform: translate(var(--dx, 0), -26px) scale(1.15); opacity: 0; }
+}
 
 .pup {
   width: 110px; height: 130px; position: relative;

@@ -10,9 +10,9 @@ const CAST_STYLE = {
   // different-colored Hawaiian hibiscus (the `flower` color).
   architect: { color: '#22222a', size: 1.40, flower: '#ff4d6d', label: 'architect', flowerTop: -28 },
   coder:     { color: '#7bdcb5', size: 1.00, flower: '#ff8c42', label: 'programmer' },
-  reviewer:  { color: '#2b2b34', size: 1.12, flower: '#a06bff', label: 'reviewer' },
+  reviewer:  { color: '#2b2b34', size: 1.12, flower: '#a06bff', label: 'reviewer', flowerTop: -6 },
   tester:    { color: '#d96b63', size: 0.92, flower: '#ffcf33', label: 'tester' },
-  security:  { color: '#9aa0b5', size: 1.12, flower: '#ff5db1', label: 'security' },
+  security:  { color: '#9aa0b5', size: 1.12, flower: '#ff5db1', label: 'security', flowerTop: -6 },
   scribe:    { color: '#ffb0d4', size: 0.82, flower: '#6fb7ff', label: 'scribe', flowerTop: 24 },
 }
 const FALLBACK_STYLE = { color: '#ffb3c6', size: 1.0, flower: '#ff8fb0', label: 'crew' }
@@ -328,3 +328,24 @@ window.devcrew.onStatus((s) => {
   if (s.state === 'done') celebrate(s.ok)
   else if (s.state === 'error') { phaseBadge.textContent = 'uh-oh 🌧️'; tickerEl.textContent = s.message || 'the build hit a snag.' }
 })
+
+/* kick up little sand puffs at the feet of whichever poodle is digging (active) */
+setInterval(() => {
+  const pup = document.querySelector('.poodle.active .pup')
+  if (!pup || !fxLayer) return
+  const scene = document.getElementById('scene').getBoundingClientRect()
+  const r = pup.getBoundingClientRect()
+  const baseX = r.left - scene.left + r.width / 2
+  const baseY = r.bottom - scene.top - 12
+  const count = 1 + Math.floor(Math.random() * 2)
+  for (let i = 0; i < count; i++) {
+    const puff = document.createElement('div')
+    puff.className = 'sandpuff'
+    const off = (Math.random() - 0.5) * 34
+    puff.style.left = `${baseX + off - 5}px`
+    puff.style.top = `${baseY + (Math.random() - 0.5) * 6}px`
+    puff.style.setProperty('--dx', `${off * 0.8}px`)
+    fxLayer.appendChild(puff)
+    setTimeout(() => puff.remove(), 760)
+  }
+}, 420)
