@@ -10,7 +10,7 @@ const CAST_STYLE = {
   // different-colored Hawaiian hibiscus (the `flower` color).
   architect: { color: '#22222a', size: 1.40, flower: '#ff4d6d', label: 'architect', flowerTop: -36 },
   coder:     { color: '#7bdcb5', size: 1.00, flower: '#ff8c42', label: 'programmer' },
-  reviewer:  { color: '#f3f0e9', size: 1.12, flower: '#a06bff', label: 'reviewer', flowerTop: -14, halo: true },
+  reviewer:  { color: '#2b2b34', size: 1.12, flower: '#a06bff', label: 'reviewer', flowerTop: -14, halo: true },
   tester:    { color: '#d96b63', size: 0.92, flower: '#ffcf33', label: 'tester' },
   security:  { color: '#9aa0b5', size: 1.12, flower: '#ff5db1', label: 'security', flowerTop: -14 },
   scribe:    { color: '#ffb0d4', size: 0.82, flower: '#6fb7ff', label: 'scribe', flowerTop: 24 },
@@ -35,11 +35,11 @@ let svgSeq = 0
 function poodleSVG(color, halo) {
   const gid = `hl${svgSeq++}`
   const haloMarkup = halo ? `
-    <ellipse cx="55" cy="-7" rx="25" ry="7" fill="none" stroke="#ffd95a" stroke-width="5" opacity=".9"/>
-    <ellipse cx="55" cy="-7" rx="25" ry="7" fill="none" stroke="#fff7c8" stroke-width="1.8"/>` : ''
+    <ellipse cx="55" cy="-18" rx="25" ry="7" fill="none" stroke="#ffd95a" stroke-width="5" opacity=".9"/>
+    <ellipse cx="55" cy="-18" rx="25" ry="7" fill="none" stroke="#fff7c8" stroke-width="1.8"/>` : ''
   const fluff = [
-    // topknot pouf
-    [55, 13, 12], [45, 18, 9], [65, 18, 9],
+    // topknot poof — big and fluffy
+    [55, 8, 15], [42, 15, 12], [68, 15, 12], [55, 18, 14], [47, 5, 10], [63, 5, 10], [55, -1, 10],
     // head
     [55, 42, 29],
     // ears (droopy poufs each side)
