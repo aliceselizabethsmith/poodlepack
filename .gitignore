@@ -1,0 +1,23 @@
+# Build output — keep the scaffold, ignore generated projects by default.
+# Comment this out if you want to commit the apps the crew builds.
+projects/*
+!projects/.gitkeep
+
+# Environment / secrets
+.env
+*.local
+
+# OS / editor
+Thumbs.db
+.DS_Store
+.vscode/
+*.swp
+
+# Python (in case built apps drop venvs here)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node (in case built apps drop deps here)
+node_modules/
