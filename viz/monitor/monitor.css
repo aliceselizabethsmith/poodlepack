@@ -1,4 +1,5 @@
-/* dashboard-specific tweaks layered on top of ../renderer/style.css */
+/* dashboard layout: a grid of small poodle "cards" on the left, a scrolling
+   chat-history panel on the right. Layered on ../renderer/style.css. */
 
 .kennel-label { color: #fff3c4; }
 
@@ -11,31 +12,76 @@
 }
 .mutebtn:active { transform: translateY(1px); }
 
-/* the stage holds a dynamic number of agents — center them, allow wrapping */
+/* the kennel: a wrapping grid of small agent cards, scrolls if it overflows */
 #stage {
-  bottom: 8%;
-  gap: clamp(8px, 3vw, 48px);
-  flex-wrap: wrap;
-  align-content: flex-end;
+  position: absolute;
+  left: 1.5%; right: 26.5%; top: 56px; bottom: 30px;
+  display: flex; flex-wrap: wrap;
+  align-content: space-evenly; justify-content: space-evenly;
+  gap: 8px;
+  padding: 8px 6px;
+  overflow-y: auto;
 }
 
-/* persistent action bubble (vs the build window's transient ones) */
-.actionbubble {
-  max-width: 200px;
-  animation: pop-in .3s cubic-bezier(.2,1.5,.5,1);
+/* one agent = bubble on top, poodle, nameplate — stacked, never overlapping */
+.agent-card {
+  width: 190px;
+  display: flex; flex-direction: column; align-items: center;
+  flex: 0 0 auto;
 }
-.actionbubble.pulse { animation: bubble-pulse .5s ease; }
-@keyframes bubble-pulse {
-  0% { transform: translateX(-50%) scale(1); }
-  40% { transform: translateX(-50%) scale(1.07); }
-  100% { transform: translateX(-50%) scale(1); }
+.agent-card .poodle { animation: bob 3.4s ease-in-out infinite; }
+.agent-card .pup { width: 94px; height: 112px; }
+.agent-card .ring { width: 78px; margin-left: -39px; bottom: 16px; }
+.agent-card .accessory { right: 31px; top: 16px; }
+.agent-card .accessory svg { width: 23px; height: 23px; }
+.agent-card .nameplate { margin-top: 3px; font-size: 12px; padding: 3px 10px; max-width: 196px; }
+.agent-card .nameplate .role { font-size: 10px; }
+.agent-card .nameplate .pname { text-transform: capitalize; }
+
+/* the per-agent action bubble (in-flow, above its poodle) */
+.cardbubble {
+  max-width: 190px; min-height: 14px;
+  background: var(--bubble);
+  border: 2px solid #ffe3ef; border-radius: 13px;
+  padding: 6px 11px; margin-bottom: 3px;
+  font-size: 12px; line-height: 1.3; color: var(--ink);
+  text-align: center;
+  overflow-wrap: anywhere; word-break: break-word;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .12);
+  position: relative;
+}
+.cardbubble::after {
+  content: ""; position: absolute; bottom: -7px; left: 26px;
+  border-width: 7px 6px 0 6px; border-style: solid;
+  border-color: var(--bubble) transparent transparent transparent;
+}
+.cardbubble.pulse { animation: cardpulse .5s ease; }
+@keyframes cardpulse { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+
+/* scrolling chat history (reuses #chatlog from style.css; make it taller here) */
+#chatlog {
+  top: 56px; right: 1.5%; bottom: 30px;
+  width: 24%; max-width: 400px;
+  max-height: none;
+  gap: 8px;
 }
 
-/* idle "kennel is quiet" mood — soften the scene a touch */
+/* crowded kennel (7+ agents): shrink cards so they all stay visible */
+#stage.compact { gap: 6px; }
+#stage.compact .agent-card { width: 146px; }
+#stage.compact .agent-card .pup { width: 72px; height: 86px; }
+#stage.compact .agent-card .ring { width: 58px; margin-left: -29px; bottom: 12px; }
+#stage.compact .agent-card .accessory { right: 24px; top: 12px; }
+#stage.compact .agent-card .accessory svg { width: 17px; height: 17px; }
+#stage.compact .agent-card .nameplate { font-size: 10px; padding: 2px 7px; }
+#stage.compact .agent-card .nameplate .role { font-size: 9px; }
+#stage.compact .cardbubble { max-width: 144px; font-size: 10.5px; padding: 5px 8px; }
+#stage.compact .cardbubble::after { left: 20px; }
+
+/* idle mood */
 body.idle #stage::after {
-  content: "💤 the pack is napping";
-  position: absolute; left: 50%; bottom: 40%;
-  transform: translateX(-50%);
-  font-size: 18px; color: rgba(91, 70, 54, .55);
-  white-space: nowrap;
+  content: "💤 the pack is napping — no background agents running";
+  margin: auto;
+  font-size: 16px; color: rgba(91, 70, 54, .55);
+  text-align: center;
 }

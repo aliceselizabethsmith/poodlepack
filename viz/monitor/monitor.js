@@ -2,10 +2,12 @@
    running. Reuses the poodle art + scene from the build window (../renderer/style.css). */
 
 const stage = document.getElementById('stage')
+const chatlog = document.getElementById('chatlog')
 const summaryEl = document.getElementById('summary')
 const tickerEl = document.getElementById('ticker-text')
 const fxLayer = document.getElementById('fx')
 const muteBtn = document.getElementById('mute')
+const music = document.getElementById('music')
 
 // agent kind -> poodle look (mirrors the build cast where it overlaps)
 const KIND_STYLE = {
@@ -73,59 +75,92 @@ function chime() {
     })
   } catch { /* audio unavailable — silent */ }
 }
+// gentle Hawaiian background loop
+if (music) {
+  music.volume = 0.32
+  music.play().catch(() => { /* a click on the speaker will start it */ })
+}
 muteBtn.addEventListener('click', () => {
   muted = !muted
   muteBtn.textContent = muted ? '🔇' : '🔊'
-  if (!muted && audioCtx?.state === 'suspended') audioCtx.resume()
+  if (muted) { music?.pause() }
+  else {
+    music?.play().catch(() => {})
+    if (audioCtx?.state === 'suspended') audioCtx.resume()
+  }
 })
 
 /* ── roster reconciliation ───────────────────────────────────────────────────*/
-const live = new Map() // agentId -> { el, bubbleEl, action, state }
+const live = new Map() // agentId -> { el, poodleEl, bubbleEl, kind, action, state }
 
-function makePoodle(a) {
+function makeCard(a) {
   const s = styleFor(a.kind)
-  const el = document.createElement('div')
-  el.className = 'poodle'
-  el.innerHTML = `
+  const card = document.createElement('div')
+  card.className = 'agent-card'
+  const bubble = document.createElement('div')
+  bubble.className = 'cardbubble'
+  const poodle = document.createElement('div')
+  poodle.className = 'poodle'
+  poodle.innerHTML = `
     <div class="ring"></div>
     <span class="accessory">${flowerSVG(s.flower)}</span>
-    <div class="pup" style="--s:${s.size}">${poodleSVG(s.color)}</div>
+    <div class="pup" style="--s:1">${poodleSVG(s.color)}</div>
     <div class="nameplate"><span class="pname">${a.kind}</span>
       <span class="role">${shortTask(a.task)}</span></div>`
-  const bubble = document.createElement('div')
-  bubble.className = 'bubble actionbubble'
-  bubble.style.bottom = `${Math.round(128 * s.size + 28)}px`
-  el.appendChild(bubble)
-  stage.appendChild(el)
-  return { el, bubbleEl: bubble, action: null, state: null }
+  card.appendChild(bubble)
+  card.appendChild(poodle)
+  stage.appendChild(card)
+  return { el: card, poodleEl: poodle, bubbleEl: bubble, kind: a.kind, action: null, state: null }
 }
 
 function shortTask(task) {
   // strip the build-crew persona preamble if present, keep it terse
-  return String(task || '').replace(/^You are \w+[^,]*,?\s*/i, '').slice(0, 28)
+  return String(task || '').replace(/^You are \w+[^,]*,?\s*/i, '').slice(0, 26)
 }
 
+// returns true if the action text changed
 function setBubble(rec, text) {
-  if (rec.action === text) return
+  if (rec.action === text) return false
   rec.action = text
   rec.bubbleEl.textContent = text
   rec.bubbleEl.classList.remove('pulse'); void rec.bubbleEl.offsetWidth; rec.bubbleEl.classList.add('pulse')
+  return true
+}
+
+// rolling chat history of agent actions
+function addLog(a) {
+  if (!chatlog) return
+  const s = styleFor(a.kind)
+  const msg = document.createElement('div')
+  msg.className = 'logmsg'
+  msg.style.setProperty('--c', s.flower)
+  const who = document.createElement('span')
+  who.className = 'who'; who.style.color = s.flower; who.textContent = a.kind
+  msg.appendChild(who)
+  msg.appendChild(document.createTextNode(' — ' + a.action))
+  chatlog.appendChild(msg)
+  while (chatlog.children.length > 80) chatlog.removeChild(chatlog.firstChild)
+  chatlog.scrollTop = chatlog.scrollHeight
 }
 
 function celebrate(rec) {
-  rec.el.classList.add('cheer')
+  rec.poodleEl.classList.add('cheer')
   const scene = document.getElementById('scene').getBoundingClientRect()
   const r = rec.el.getBoundingClientRect()
-  const pieces = ['🌺', '🐩', '⭐', '🎉', '🐚']
-  for (let i = 0; i < 10; i++) {
+  const cx = r.left - scene.left + r.width / 2
+  const cy = r.top - scene.top + r.height * 0.45
+  const pieces = ['🌺', '🐩', '⭐', '🎉', '🐚', '🌴', '🦩', '✨', '🥳']
+  for (let i = 0; i < 34; i++) {                          // bigger burst
     const c = document.createElement('div')
     c.className = 'confetti'
     c.textContent = pieces[i % pieces.length]
-    c.style.left = `${r.left - scene.left + (Math.random() * r.width)}px`
-    c.style.top = `${r.top - scene.top}px`
-    c.style.animationDuration = `${1.6 + Math.random()}s`
+    c.style.fontSize = `${20 + Math.random() * 22}px`
+    c.style.left = `${cx + (Math.random() - 0.5) * 280}px`
+    c.style.top = `${cy + (Math.random() - 0.5) * 60}px`
+    c.style.animationDuration = `${2.2 + Math.random() * 1.8}s`
+    c.style.animationDelay = `${Math.random() * 0.3}s`
     fxLayer.appendChild(c)
-    setTimeout(() => c.remove(), 3000)
+    setTimeout(() => c.remove(), 4500)
   }
 }
 
@@ -134,10 +169,10 @@ window.kennel.onRoster((roster) => {
 
   for (const a of roster) {
     let rec = live.get(a.agentId)
-    if (!rec) { rec = makePoodle(a); live.set(a.agentId, rec) }
-    setBubble(rec, a.action)
-    if (a.state === 'working') { rec.el.classList.add('active'); rec.el.classList.remove('cheer') }
-    if (a.state === 'done' && rec.state !== 'done') { rec.el.classList.remove('active'); celebrate(rec); chime() }
+    if (!rec) { rec = makeCard(a); live.set(a.agentId, rec) }
+    if (setBubble(rec, a.action)) addLog(a)
+    if (a.state === 'working') { rec.poodleEl.classList.add('active'); rec.poodleEl.classList.remove('cheer') }
+    if (a.state === 'done' && rec.state !== 'done') { rec.poodleEl.classList.remove('active'); celebrate(rec); chime() }
     rec.state = a.state
   }
   // drop agents that fell out of the roster (lingered out)
@@ -152,4 +187,6 @@ window.kennel.onRoster((roster) => {
   const latest = roster[0]
   tickerEl.textContent = latest ? `🌺 ${latest.kind} · ${latest.action}` : '🐩 watching for background agents…'
   document.body.classList.toggle('idle', live.size === 0)
+  // shrink the cards when the kennel gets crowded so everyone stays visible
+  stage.classList.toggle('compact', live.size > 6)
 })
