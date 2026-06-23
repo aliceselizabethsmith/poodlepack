@@ -7,7 +7,7 @@ export const meta = {
     { title: 'Code', detail: 'Kai codes one file per programmer, in parallel' },
     { title: 'Review', detail: 'Koa reads the code for bugs and gaps' },
     { title: 'Fix', detail: 'Kai applies the confirmed review findings' },
-    { title: 'Test', detail: 'Nalu writes + runs tests, then a fix loop until green' },
+    { title: 'Test', detail: 'Ruby writes + runs tests, then a fix loop until green' },
     { title: 'Security', detail: 'Pueo runs scanners + an AI security review, then fixes' },
     { title: 'Docs', detail: 'Mahina writes the README' },
   ],
@@ -39,7 +39,7 @@ const CAST = {
   architect: { persona: 'Opal',    emoji: '🌺', label: 'architect',     to: 'coder' },
   coder:     { persona: 'Kai',     emoji: '🏄', label: 'programmer',     to: 'reviewer' },
   reviewer:  { persona: 'Starr',   emoji: '🔍', label: 'code reviewer',  to: 'coder' },
-  tester:    { persona: 'Nalu',    emoji: '🌊', label: 'tester',         to: 'security' },
+  tester:    { persona: 'Ruby',    emoji: '🌺', label: 'tester',         to: 'security' },
   security:  { persona: 'Pueo',    emoji: '🦉', label: 'security guard',  to: 'scribe' },
   scribe:    { persona: 'Mahina',  emoji: '🌙', label: 'scribe',         to: null },
 }
@@ -61,25 +61,33 @@ function emitBlock({ seq, role, phase, to = CAST[role].to, file = null, extraDon
   const toField = to ? `,\n     "to": ${JSON.stringify(to)}` : ''
   return `
 
-─── SHOW YOURSELF IN THE KAWAII CREW WINDOW (do this, it is part of the job) ───
-You are ${me.persona} ${me.emoji}, the ${me.label}. Speak in a light, cheerful, kawaii island voice.
-The crew window watches a folder for tiny event files. Use the Write tool to create BOTH:
+─── REPORT YOUR STATUS TO THE CREW WINDOW (do this, it is part of the job) ───
+You are ${me.persona}, the ${me.label} on a professional software development crew shipping real,
+working code. The crew window shows a live feed of what the team is doing.
+Each "bubble" must be a clear, factual status line a developer can read to know exactly what happened —
+name the file, the approach, the count, or the result. Be concrete and technical, not cute. No emoji,
+no island slang. One sentence.
+  Good: "Implementing generator.py using the secrets module for cryptographically secure RNG."
+  Good: "Ran pytest: 40 passed, 0 failed."
+  Bad:  "Surfing into the code, woohoo!"
+
+Use the Write tool to create BOTH event files:
 
 1) IMMEDIATELY, before any other work, write:
    Path: ${runDir}/events/${pad4(seq)}-${role}-start.json
    {
      "seq": ${seq}, "role": "${role}", "persona": "${me.persona}", "phase": "${phase}",
-     "kind": "start", "bubble": "<one short cheerful sentence on what you're about to do>"${fileField}
+     "kind": "start", "bubble": "<what you are starting: the file/component and your approach>"${fileField}
    }
 
 2) AFTER you finish, write:
    Path: ${runDir}/events/${pad4(seq)}-${role}-done.json
    {
      "seq": ${seq}, "role": "${role}", "persona": "${me.persona}", "phase": "${phase}",
-     "kind": "done", "bubble": "<one short sentence handing off to ${toPersona}, in character>"${toField}${fileField}${extraDone}
+     "kind": "done", "bubble": "<what you produced or found (give counts/results), handing to ${toPersona}>"${toField}${fileField}${extraDone}
    }
 
-Keep each "bubble" to one friendly sentence. NEVER edit or delete an event file — only create new ones.
+NEVER edit or delete an event file — only create new ones.
 ───────────────────────────────────────────────────────────────────────────────`
 }
 
@@ -173,8 +181,8 @@ const SECURITY_SCHEMA = {
 phase('Design')
 const designSeq = nextSeq()
 const design = await agent(
-  `You are Opal 🌺, a large black standard poodle and the architect who leads a small kawaii software
-crew on Kauai. Design a project that satisfies this spec:
+  `You are Opal, the architect who leads a professional software development crew (styled as a pack of
+poodles on Kauai, but the work is real engineering). Design a project that satisfies this spec:
 
 "${spec}"
 
@@ -199,7 +207,7 @@ const fileList = design.files.map(f => `- ${f.path}: ${f.purpose}`).join('\n')
 await parallel(design.files.map(file => {
   const seq = nextSeq()
   return () => agent(
-    `You are Kai 🏄, a programmer on a kawaii crew building this project:
+    `You are Kai 🏄, a programmer on the software development crew building this project:
 
 Spec: "${spec}"
 Language: ${design.language}
@@ -223,7 +231,7 @@ sibling files above exist and import/reference them as designed.${
 phase('Review')
 const reviewSeq = nextSeq()
 const review = await agent(
-  `You are Starr 🔍, a sharp-eyed black standard poodle and senior code reviewer on a kawaii crew.
+  `You are Starr 🔍, a sharp-eyed black standard poodle and senior code reviewer on the software development crew.
 Review the project just written under ${base}/ (read the files with your tools). The project should satisfy:
 
 "${spec}"
@@ -258,7 +266,7 @@ ${findingList}${
   log('No actionable review findings — Kai skips the fix phase.')
 }
 
-// ── Phase 5: Test (Nalu writes + runs tests, then a bounded fix loop) ─────────
+// ── Phase 5: Test (Ruby writes + runs tests, then a bounded fix loop) ─────────
 phase('Test')
 const MAX_TEST_ROUNDS = 2
 let testResult = null
@@ -266,7 +274,7 @@ for (let round = 1; round <= MAX_TEST_ROUNDS; round++) {
   const testSeq = nextSeq()
   const isRetry = round > 1
   testResult = await agent(
-    `You are Nalu 🌊, the tester on a kawaii crew. ${isRetry
+    `You are Ruby, the tester on the crew. ${isRetry
       ? 'You are re-running the tests after Kai patched the failures from the last round.'
       : 'Write a focused test suite for the project, then run it.'}
 
@@ -288,7 +296,7 @@ Do this:
     { label: `nalu:test-r${round}`, phase: 'Test', schema: TEST_SCHEMA },
   )
 
-  log(`Nalu round ${round}: ${testResult.passed} passed, ${testResult.failed} failed` +
+  log(`Ruby round ${round}: ${testResult.passed} passed, ${testResult.failed} failed` +
       (testResult.ranTests ? '' : ' (tests did not execute)'))
 
   if (!testResult.ranTests || testResult.failed === 0) break
@@ -302,7 +310,7 @@ Do this:
   const failList = testResult.failures
     .map(f => `- ${f.test} (${f.file || '?'}): ${f.message}`).join('\n')
   await agent(
-    `You are Kai 🏄. Nalu's tests are failing in the project under ${base}/. Read the relevant source
+    `You are Kai 🏄. Ruby's tests are failing in the project under ${base}/. Read the relevant source
 and test files, then fix the SOURCE code so the tests pass (only change a test if it is genuinely wrong
 about the spec). Use Edit/Write.
 
@@ -317,7 +325,7 @@ ${failList}${
 phase('Security')
 const secSeq = nextSeq()
 const security = await agent(
-  `You are Pueo 🦉, the night-owl security guard on a kawaii crew. Audit the project under ${base}/.
+  `You are Pueo 🦉, the night-owl security guard on the software development crew. Audit the project under ${base}/.
 
 Language: ${design.language}
 Run REAL tooling where it fits, using the Bash tool, then add your own careful review:
@@ -358,7 +366,7 @@ ${secList}${
 phase('Docs')
 const docSeq = nextSeq()
 await agent(
-  `You are Mahina 🌙, the scribe on a kawaii crew. Read the finished project under ${base}/ and write a
+  `You are Mahina 🌙, the scribe on the software development crew. Read the finished project under ${base}/ and write a
 clear README.md at ${base}/README.md using the Write tool. Include: a one-paragraph description, how to
 install/run it, a usage example with real input and expected output, how to run the tests, and a short
 "How it works" section. Keep it concise and accurate to the actual code.${

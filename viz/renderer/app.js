@@ -6,21 +6,23 @@ const ROLE_ORDER = ['architect', 'coder', 'reviewer', 'tester', 'security', 'scr
 
 // Each role is a distinctly colored + sized poodle.
 const CAST_STYLE = {
-  // Opal — large black standard poodle, the lead. Starr — black standard poodle, the reviewer.
-  architect: { color: '#22222a', size: 1.30, accessory: '🌺', label: 'architect' },
-  coder:     { color: '#7bdcb5', size: 1.00, accessory: '🏄', label: 'programmer' },
-  reviewer:  { color: '#2b2b34', size: 1.22, accessory: '🔍', label: 'reviewer' },
-  tester:    { color: '#6ec6ff', size: 0.90, accessory: '🌊', label: 'tester' },
-  security:  { color: '#9aa0b5', size: 1.12, accessory: '🦉', label: 'security' },
-  scribe:    { color: '#ffd98a', size: 0.82, accessory: '🌙', label: 'scribe' },
+  // Opal & Starr are black standard poodles; Ruby is the reddish one. Each wears a
+  // different-colored Hawaiian hibiscus (the `flower` color).
+  architect: { color: '#22222a', size: 1.30, flower: '#ff4d6d', label: 'architect' },
+  coder:     { color: '#7bdcb5', size: 1.00, flower: '#ff8c42', label: 'programmer' },
+  reviewer:  { color: '#2b2b34', size: 1.12, flower: '#a06bff', label: 'reviewer' },
+  tester:    { color: '#d96b63', size: 0.92, flower: '#ffcf33', label: 'tester' },
+  security:  { color: '#9aa0b5', size: 1.12, flower: '#ff5db1', label: 'security' },
+  scribe:    { color: '#ffd98a', size: 0.82, flower: '#6fb7ff', label: 'scribe' },
 }
-const FALLBACK_STYLE = { color: '#ffb3c6', size: 1.0, accessory: '🐩', label: 'crew' }
+const FALLBACK_STYLE = { color: '#ffb3c6', size: 1.0, flower: '#ff8fb0', label: 'crew' }
 
 const stage = document.getElementById('stage')
 const phaseBadge = document.getElementById('phase')
 const specEl = document.getElementById('spec')
 const tickerEl = document.getElementById('ticker-text')
 const fxLayer = document.getElementById('fx')
+const chatlog = document.getElementById('chatlog')
 
 const chars = {}   // role -> { el, pup, persona, style }
 let svgSeq = 0
@@ -87,6 +89,20 @@ function poodleSVG(color) {
   </svg>`
 }
 
+/* a little Hawaiian hibiscus the poodle wears, tinted per character */
+function flowerSVG(color) {
+  const petals = [0, 72, 144, 216, 288]
+    .map(a => `<ellipse cx="13" cy="6" rx="5.2" ry="7" fill="${color}" transform="rotate(${a} 13 13)"/>`)
+    .join('')
+  return `<svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
+    ${petals}
+    <circle cx="13" cy="13" r="4" fill="#fff3c4"/>
+    <circle cx="13" cy="13" r="1.9" fill="#ffb74d"/>
+    <line x1="13" y1="13" x2="13" y2="3" stroke="#fff3c4" stroke-width="1.2"/>
+    <circle cx="13" cy="3" r="1.5" fill="#ffe08a"/>
+  </svg>`
+}
+
 /* ── build a poodle on the stage ──────────────────────────────────────────── */
 function ensureChar(role, persona) {
   if (chars[role]) {
@@ -103,7 +119,7 @@ function ensureChar(role, persona) {
   el.style.setProperty('order', String(ROLE_ORDER.indexOf(role) + 1 || 99))
   el.innerHTML = `
     <div class="ring"></div>
-    <span class="accessory">${style.accessory}</span>
+    <span class="accessory">${flowerSVG(style.flower)}</span>
     <div class="pup" style="transform: scale(${style.size})">${poodleSVG(style.color)}</div>
     <div class="nameplate"><span class="pname">${persona || role}</span>
       <span class="role">${style.label}</span></div>`
@@ -128,6 +144,29 @@ function speak(role, text, kind) {
   b.textContent = text
   c.el.appendChild(b)
   setTimeout(() => { b.classList.add('fade'); setTimeout(() => b.remove(), 400) }, 4800)
+}
+
+/* append a line to the scrolling conversation history (translucent, auto-scrolls) */
+function addLog(role, persona, text, phase) {
+  if (!chatlog || !text) return
+  const style = CAST_STYLE[role] || FALLBACK_STYLE
+  const col = style.flower || style.color
+  const msg = document.createElement('div')
+  msg.className = 'logmsg'
+  msg.style.setProperty('--c', col)
+  const who = document.createElement('span')
+  who.className = 'who'
+  who.style.color = col
+  who.textContent = persona || role
+  const tag = document.createElement('span')
+  tag.className = 'logphase'
+  tag.textContent = phase ? ` · ${phase}` : ''
+  msg.appendChild(who)
+  msg.appendChild(tag)
+  msg.appendChild(document.createTextNode(' — ' + text))
+  chatlog.appendChild(msg)
+  // keep the newest message in view as the panel outgrows its frame
+  chatlog.scrollTop = chatlog.scrollHeight
 }
 
 function spotlight(role) {
@@ -188,13 +227,16 @@ window.devcrew.onEvent((evt) => {
   if (evt.phase) phaseBadge.textContent = evt.phase
 
   spotlight(evt.role)
-  if (evt.bubble) speak(evt.role, evt.bubble, evt.kind)
+  if (evt.bubble) {
+    speak(evt.role, evt.bubble, evt.kind)
+    addLog(evt.role, evt.persona, evt.bubble, evt.phase)
+  }
 
   if (evt.kind === 'done' && evt.to) {
-    handoff(evt.role, evt.to, c.style.accessory)
+    handoff(evt.role, evt.to, '🌺')
   }
   const tag = evt.kind === 'done' ? '✓' : '…'
-  tickerEl.textContent = `${c.style.accessory} ${evt.persona || evt.role} · ${evt.phase || ''} ${tag} ${evt.bubble || ''}`
+  tickerEl.textContent = `🌺 ${evt.persona || evt.role} · ${evt.phase || ''} ${tag} ${evt.bubble || ''}`
 })
 
 window.devcrew.onStatus((s) => {

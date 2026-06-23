@@ -20,29 +20,29 @@ const CAST = [
   { role: 'architect', persona: 'Opal',   emoji: '🌺', color: '#22222a' },
   { role: 'coder',     persona: 'Kai',    emoji: '🏄', color: '#7bdcb5' },
   { role: 'reviewer',  persona: 'Starr',  emoji: '🔍', color: '#2b2b34' },
-  { role: 'tester',    persona: 'Nalu',   emoji: '🌊', color: '#6ec6ff' },
+  { role: 'tester',    persona: 'Ruby',   emoji: '🌺', color: '#d96b63' },
   { role: 'security',  persona: 'Pueo',   emoji: '🦉', color: '#9aa0b5' },
   { role: 'scribe',    persona: 'Mahina', emoji: '🌙', color: '#ffd166' },
 ]
 const PHASES = ['Design', 'Code', 'Review', 'Fix', 'Test', 'Security', 'Docs']
-const SPEC = 'a CLI tool that converts a CSV file into a Markdown table'
+const SPEC = 'a command-line password generator with flags for length and character toggles'
 
-// The scripted show. Each entry becomes one event file.
+// The scripted show. Each entry becomes one event file. Bubbles are factual status lines.
 const SCRIPT = [
-  { role: 'architect', phase: 'Design', kind: 'start', bubble: 'Aloha crew! Let me sketch the blueprint 🌺' },
-  { role: 'architect', phase: 'Design', kind: 'done',  to: 'coder', projectName: 'csv-to-markdown', bubble: "Design's pau — Kai, start paddling on the code! 🛠️" },
-  { role: 'coder', phase: 'Code', kind: 'start', file: 'src/main.py', bubble: 'Hanging ten on main.py 🏄' },
-  { role: 'coder', phase: 'Code', kind: 'done',  to: 'reviewer', file: 'src/main.py', bubble: "main.py's on the beach — Starr, take a look! ✨" },
-  { role: 'reviewer', phase: 'Review', kind: 'start', bubble: 'Sniffing around for bugs 🔍' },
-  { role: 'reviewer', phase: 'Review', kind: 'done',  to: 'coder', bubble: 'Tiny leak in the parser — patch it, Kai! 🐾' },
-  { role: 'coder', phase: 'Fix', kind: 'start', bubble: 'On it — patching now 🏄' },
-  { role: 'coder', phase: 'Fix', kind: 'done',  to: 'tester', bubble: 'Fixed up! Nalu, make some waves 🌊' },
-  { role: 'tester', phase: 'Test', kind: 'start', bubble: 'Splashing in a test suite 🌊' },
-  { role: 'tester', phase: 'Test', kind: 'done',  to: 'security', ok: true, bubble: 'All green — 9/9 passed! Pueo, your watch 🦉' },
-  { role: 'security', phase: 'Security', kind: 'start', bubble: 'Hooting through the code for trouble 🦉' },
-  { role: 'security', phase: 'Security', kind: 'done',  to: 'scribe', bubble: 'No prowlers tonight — Mahina, write it up 🌙' },
-  { role: 'scribe', phase: 'Docs', kind: 'start', bubble: 'Inking the README by moonlight 🌙' },
-  { role: 'scribe', phase: 'Docs', kind: 'done',  bubble: "README's ready — ship it! 📜" },
+  { role: 'architect', phase: 'Design', kind: 'start', bubble: 'Designing the project structure and selecting the language.' },
+  { role: 'architect', phase: 'Design', kind: 'done',  to: 'coder', projectName: 'passgen-cli', bubble: 'Design complete: Python, modules cli.py / generator.py / __main__.py plus a test suite.' },
+  { role: 'coder', phase: 'Code', kind: 'start', file: 'passgen/generator.py', bubble: 'Implementing generator.py using the secrets module for cryptographically secure RNG.' },
+  { role: 'coder', phase: 'Code', kind: 'done',  to: 'reviewer', file: 'passgen/generator.py', bubble: 'generator.py done: length control, symbol/number toggles, ambiguous-char exclusion.' },
+  { role: 'reviewer', phase: 'Review', kind: 'start', bubble: 'Reviewing all modules for bugs and interface mismatches.' },
+  { role: 'reviewer', phase: 'Review', kind: 'done',  to: 'coder', bubble: 'Found 1 issue: cli.py does not validate that --length is positive.' },
+  { role: 'coder', phase: 'Fix', kind: 'start', bubble: 'Adding validation for the --length flag in cli.py.' },
+  { role: 'coder', phase: 'Fix', kind: 'done',  to: 'tester', bubble: 'Fixed: cli.py now rejects non-positive lengths with a clear error.' },
+  { role: 'tester', phase: 'Test', kind: 'start', bubble: 'Writing pytest cases for generator rules and CLI argument parsing.' },
+  { role: 'tester', phase: 'Test', kind: 'done',  to: 'security', ok: true, bubble: 'Ran pytest: 40 passed, 0 failed.' },
+  { role: 'security', phase: 'Security', kind: 'start', bubble: 'Running bandit and checking for weak RNG and unvalidated input.' },
+  { role: 'security', phase: 'Security', kind: 'done',  to: 'scribe', bubble: 'bandit: 0 findings. Uses secrets (not random) — no issues.' },
+  { role: 'scribe', phase: 'Docs', kind: 'start', bubble: 'Writing README: usage, flags, examples, and how to run the tests.' },
+  { role: 'scribe', phase: 'Docs', kind: 'done',  bubble: 'README.md complete. Project ready to ship.' },
 ]
 
 const personaOf = role => CAST.find(c => c.role === role)?.persona || role
