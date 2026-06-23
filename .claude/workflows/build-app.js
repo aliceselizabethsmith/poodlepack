@@ -17,7 +17,20 @@ export const meta = {
 // args may be a bare spec string (headless run) or { spec, runDir } when the kawaii
 // window is attached. runDir is the shared folder both the crew and the window watch.
 const DEFAULT_SPEC = 'a CLI tool that converts a CSV file into a formatted Markdown table'
-const input = (args && typeof args === 'object') ? args : { spec: args }
+// args may arrive as an object, a JSON string (the Workflow tool sometimes serializes object
+// args), or a bare spec string. Normalize all three so runDir is never silently lost.
+function parseInput(raw) {
+  if (raw && typeof raw === 'object') return raw
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    if (trimmed.startsWith('{')) {
+      try { return JSON.parse(trimmed) } catch { /* not JSON — treat as a plain spec */ }
+    }
+    return { spec: raw }
+  }
+  return {}
+}
+const input = parseInput(args)
 const spec = (typeof input.spec === 'string' && input.spec.trim()) ? input.spec.trim() : DEFAULT_SPEC
 const runDir = (typeof input.runDir === 'string' && input.runDir.trim()) ? input.runDir.trim() : null
 
