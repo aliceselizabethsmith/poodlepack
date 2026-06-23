@@ -158,14 +158,15 @@ body {
 .poodle.active { z-index: 9; }
 .poodle.active .pup { animation: dig .42s ease-in-out infinite; }
 .poodle.active .ring { opacity: 1; transform: scale(1); }
-.poodle.cheer .pup { animation: hop .5s ease infinite; }
+/* a short, finite happy hop on shipping — then they settle, no endless bouncing */
+.poodle.cheer .pup { animation: hop .6s ease-in-out 4; }
 @keyframes bob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
 /* keep the per-poodle scale (var --s) through the active/cheer animations so size never resets */
 /* "dig": an active poodle dips down and paws side to side, like digging in the sand */
 @keyframes dig   { 0%,100% { transform: scale(var(--s,1)) translateY(0) rotate(0);}
                    35% { transform: scale(var(--s,1)) translateY(4px) rotate(-3deg);}
                    70% { transform: scale(var(--s,1)) translateY(5px) rotate(3deg);} }
-@keyframes hop   { 0%,100% { transform: scale(var(--s,1)) translateY(0);} 40% { transform: scale(var(--s,1)) translateY(-15px);} }
+@keyframes hop   { 0%,100% { transform: scale(var(--s,1)) translateY(0);} 45% { transform: scale(var(--s,1)) translateY(-12px);} }
 
 /* little sand puffs kicked up while a poodle digs */
 .sandpuff {
