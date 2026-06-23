@@ -25,11 +25,11 @@ const EVENTS_DIR = path.join(RUN_DIR, 'events')
 // The cast, with the poodle colors the window expects. Opal & Starr are the black standard poodles.
 const CAST = [
   { role: 'architect', persona: 'Opal',   emoji: '🌺', color: '#22222a' },
-  { role: 'coder',     persona: 'Kai',    emoji: '🏄', color: '#7bdcb5' },
+  { role: 'coder',     persona: 'Sylvie',    emoji: '🏄', color: '#7bdcb5' },
   { role: 'reviewer',  persona: 'Starr',  emoji: '🔍', color: '#2b2b34' },
   { role: 'tester',    persona: 'Ruby',   emoji: '🌺', color: '#d96b63' },
-  { role: 'security',  persona: 'Pueo',   emoji: '🦉', color: '#9aa0b5' },
-  { role: 'scribe',    persona: 'Mahina', emoji: '🌙', color: '#ffd166' },
+  { role: 'security',  persona: 'Lucy',   emoji: '🦉', color: '#9aa0b5' },
+  { role: 'scribe',    persona: 'Pearl', emoji: '🌙', color: '#ffd166' },
 ]
 const PHASES = ['Design', 'Code', 'Review', 'Fix', 'Test', 'Security', 'Docs']
 

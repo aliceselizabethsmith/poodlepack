@@ -8,7 +8,7 @@ const ROLE_ORDER = ['architect', 'coder', 'reviewer', 'tester', 'security', 'scr
 const CAST_STYLE = {
   // Opal & Starr are black standard poodles; Ruby is the reddish one. Each wears a
   // different-colored Hawaiian hibiscus (the `flower` color).
-  architect: { color: '#22222a', size: 1.30, flower: '#ff4d6d', label: 'architect' },
+  architect: { color: '#22222a', size: 1.40, flower: '#ff4d6d', label: 'architect' },
   coder:     { color: '#7bdcb5', size: 1.00, flower: '#ff8c42', label: 'programmer' },
   reviewer:  { color: '#2b2b34', size: 1.12, flower: '#a06bff', label: 'reviewer' },
   tester:    { color: '#d96b63', size: 0.92, flower: '#ffcf33', label: 'tester' },
@@ -120,7 +120,7 @@ function ensureChar(role, persona) {
   el.innerHTML = `
     <div class="ring"></div>
     <span class="accessory">${flowerSVG(style.flower)}</span>
-    <div class="pup" style="transform: scale(${style.size})">${poodleSVG(style.color)}</div>
+    <div class="pup" style="--s: ${style.size}">${poodleSVG(style.color)}</div>
     <div class="nameplate"><span class="pname">${persona || role}</span>
       <span class="role">${style.label}</span></div>`
   stage.appendChild(el)

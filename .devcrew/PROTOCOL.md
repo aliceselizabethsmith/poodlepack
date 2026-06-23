@@ -30,11 +30,11 @@ scene before any agent runs.
   "startedSeq": 0,
   "cast": [
     { "role": "architect", "persona": "Opal",   "emoji": "🌺", "color": "#22222a" },
-    { "role": "coder",      "persona": "Kai",    "emoji": "🏄", "color": "#7bdcb5" },
+    { "role": "coder",      "persona": "Sylvie",    "emoji": "🏄", "color": "#7bdcb5" },
     { "role": "reviewer",   "persona": "Starr",  "emoji": "🔍", "color": "#2b2b34" },
     { "role": "tester",     "persona": "Ruby",   "emoji": "🌺", "color": "#d96b63" },
-    { "role": "security",   "persona": "Pueo",   "emoji": "🦉", "color": "#9aa0b5" },
-    { "role": "scribe",     "persona": "Mahina", "emoji": "🌙", "color": "#ffd166" }
+    { "role": "security",   "persona": "Lucy",   "emoji": "🦉", "color": "#9aa0b5" },
+    { "role": "scribe",     "persona": "Pearl", "emoji": "🌙", "color": "#ffd166" }
   ],
   "phases": ["Design", "Code", "Review", "Fix", "Test", "Security", "Docs"]
 }
@@ -51,7 +51,7 @@ parallel coders never collide and the watcher never reads a half-written file tw
 {
   "seq": 2,                       // ordering hint; window sorts by (seq, filename)
   "role": "coder",
-  "persona": "Kai",
+  "persona": "Sylvie",
   "phase": "Code",
   "kind": "start",                // "start" when the agent begins, "done" when finished
   "bubble": "Got the design — paddling out to code src/main.py! 🏄",
