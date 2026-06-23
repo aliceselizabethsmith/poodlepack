@@ -4,12 +4,12 @@ export const meta = {
   whenToUse: 'When you want to turn a one-line software spec into a working project under projects/<name>/, optionally animated live in the kawaii Kauai crew window',
   phases: [
     { title: 'Design', detail: 'Leilani the architect picks language + file structure' },
-    { title: 'Code', detail: 'Kai codes one file per programmer, in parallel' },
+    { title: 'Code', detail: 'Sylvie codes one file per programmer, in parallel' },
     { title: 'Review', detail: 'Koa reads the code for bugs and gaps' },
-    { title: 'Fix', detail: 'Kai applies the confirmed review findings' },
+    { title: 'Fix', detail: 'Sylvie applies the confirmed review findings' },
     { title: 'Test', detail: 'Ruby writes + runs tests, then a fix loop until green' },
-    { title: 'Security', detail: 'Pueo runs scanners + an AI security review, then fixes' },
-    { title: 'Docs', detail: 'Mahina writes the README' },
+    { title: 'Security', detail: 'Lucy runs scanners + an AI security review, then fixes' },
+    { title: 'Docs', detail: 'Pearl writes the README' },
   ],
 }
 
@@ -37,11 +37,11 @@ const runDir = (typeof input.runDir === 'string' && input.runDir.trim()) ? input
 // ── The cast (kawaii Kauai islanders) ─────────────────────────────────────────
 const CAST = {
   architect: { persona: 'Opal',    emoji: '🌺', label: 'architect',     to: 'coder' },
-  coder:     { persona: 'Kai',     emoji: '🏄', label: 'programmer',     to: 'reviewer' },
+  coder:     { persona: 'Sylvie',     emoji: '🏄', label: 'programmer',     to: 'reviewer' },
   reviewer:  { persona: 'Starr',   emoji: '🔍', label: 'code reviewer',  to: 'coder' },
   tester:    { persona: 'Ruby',    emoji: '🌺', label: 'tester',         to: 'security' },
-  security:  { persona: 'Pueo',    emoji: '🦉', label: 'security guard',  to: 'scribe' },
-  scribe:    { persona: 'Mahina',  emoji: '🌙', label: 'scribe',         to: null },
+  security:  { persona: 'Lucy',    emoji: '🦉', label: 'security guard',  to: 'scribe' },
+  scribe:    { persona: 'Pearl',  emoji: '🌙', label: 'scribe',         to: null },
 }
 
 // ── Event emission: the bridge to the kawaii window ───────────────────────────
@@ -194,20 +194,20 @@ Return the design as structured output. projectName must be kebab-case. List eve
 clear purpose so a programmer can implement it without further questions.${
     emitBlock({ seq: designSeq, role: 'architect', phase: 'Design',
       extraDone: ',\n     "projectName": "<the kebab-case projectName you chose>"' })}`,
-  { label: 'leilani:design', schema: DESIGN_SCHEMA },
+  { label: 'opal:design', schema: DESIGN_SCHEMA },
 )
 
 const base = `projects/${design.projectName}`
 log(`Opal designed "${design.projectName}" in ${design.language} — ${design.files.length} file(s)`)
 log(`Output target: ${base}/  (relative to the workspace root — make sure that's the devcrew repo)`)
 
-// ── Phase 2: Code (Kai, one programmer per file, in parallel) ─────────────────
+// ── Phase 2: Code (Sylvie, one programmer per file, in parallel) ─────────────────
 phase('Code')
 const fileList = design.files.map(f => `- ${f.path}: ${f.purpose}`).join('\n')
 await parallel(design.files.map(file => {
   const seq = nextSeq()
   return () => agent(
-    `You are Kai 🏄, a programmer on the software development crew building this project:
+    `You are Sylvie 🏄, a programmer on the software development crew building this project:
 
 Spec: "${spec}"
 Language: ${design.language}
@@ -223,7 +223,7 @@ Your job: implement EXACTLY this one file and write it to disk using the Write t
 Write complete, working, idiomatic code — no TODOs, no placeholders, no stubbed functions. Assume the
 sibling files above exist and import/reference them as designed.${
       emitBlock({ seq, role: 'coder', phase: 'Code', file: file.path })}`,
-    { label: `kai:${file.path}`, phase: 'Code' },
+    { label: `sylvie:${file.path}`, phase: 'Code' },
   )
 }))
 
@@ -240,30 +240,30 @@ Look for real defects: bugs, broken imports, mismatched interfaces between files
 handling, and gaps versus the spec. Do NOT invent style nitpicks. Return structured findings; if the
 code is genuinely correct and complete, return an empty findings array.${
     emitBlock({ seq: reviewSeq, role: 'reviewer', phase: 'Review' })}`,
-  { label: 'koa:review', schema: REVIEW_SCHEMA },
+  { label: 'starr:review', schema: REVIEW_SCHEMA },
 )
 
 const actionable = review.findings.filter(f => f.severity !== 'minor')
 log(`Starr: ${review.findings.length} finding(s), ${actionable.length} actionable`)
 
-// ── Phase 4: Fix (Kai applies review findings) ────────────────────────────────
+// ── Phase 4: Fix (Sylvie applies review findings) ────────────────────────────────
 if (actionable.length > 0) {
   phase('Fix')
   const fixSeq = nextSeq()
   const findingList = actionable
     .map(f => `- [${f.severity}] ${f.file}: ${f.issue}\n    Fix: ${f.fix}`).join('\n')
   await agent(
-    `You are Kai 🏄, back at the keyboard. Starr the reviewer found issues in the project under ${base}/.
+    `You are Sylvie 🏄, back at the keyboard. Starr the reviewer found issues in the project under ${base}/.
 Read the affected files and apply these fixes using the Edit/Write tools. Make only the changes needed
 to resolve each finding; keep the rest of the code intact.
 
 Findings:
 ${findingList}${
       emitBlock({ seq: fixSeq, role: 'coder', phase: 'Fix', to: 'tester' })}`,
-    { label: 'kai:fix-review', phase: 'Fix' },
+    { label: 'sylvie:fix-review', phase: 'Fix' },
   )
 } else {
-  log('No actionable review findings — Kai skips the fix phase.')
+  log('No actionable review findings — Sylvie skips the fix phase.')
 }
 
 // ── Phase 5: Test (Ruby writes + runs tests, then a bounded fix loop) ─────────
@@ -275,7 +275,7 @@ for (let round = 1; round <= MAX_TEST_ROUNDS; round++) {
   const isRetry = round > 1
   testResult = await agent(
     `You are Ruby, the tester on the crew. ${isRetry
-      ? 'You are re-running the tests after Kai patched the failures from the last round.'
+      ? 'You are re-running the tests after Sylvie patched the failures from the last round.'
       : 'Write a focused test suite for the project, then run it.'}
 
 Project: ${base}/   Language: ${design.language}
@@ -293,7 +293,7 @@ Do this:
       emitBlock({ seq: testSeq, role: 'tester', phase: 'Test',
         to: 'security',
         extraDone: ',\n     "ok": <true if all tests passed, false otherwise>' })}`,
-    { label: `nalu:test-r${round}`, phase: 'Test', schema: TEST_SCHEMA },
+    { label: `ruby:test-r${round}`, phase: 'Test', schema: TEST_SCHEMA },
   )
 
   log(`Ruby round ${round}: ${testResult.passed} passed, ${testResult.failed} failed` +
@@ -305,27 +305,27 @@ Do this:
     break
   }
 
-  // Hand the failures to Kai for a fix, then loop to re-test.
+  // Hand the failures to Sylvie for a fix, then loop to re-test.
   const fixSeq = nextSeq()
   const failList = testResult.failures
     .map(f => `- ${f.test} (${f.file || '?'}): ${f.message}`).join('\n')
   await agent(
-    `You are Kai 🏄. Ruby's tests are failing in the project under ${base}/. Read the relevant source
+    `You are Sylvie 🏄. Ruby's tests are failing in the project under ${base}/. Read the relevant source
 and test files, then fix the SOURCE code so the tests pass (only change a test if it is genuinely wrong
 about the spec). Use Edit/Write.
 
 Failing tests:
 ${failList}${
       emitBlock({ seq: fixSeq, role: 'coder', phase: 'Test', to: 'tester' })}`,
-    { label: `kai:fix-tests-r${round}`, phase: 'Test' },
+    { label: `sylvie:fix-tests-r${round}`, phase: 'Test' },
   )
 }
 
-// ── Phase 6: Security (Pueo runs scanners + AI review, then a fix) ────────────
+// ── Phase 6: Security (Lucy runs scanners + AI review, then a fix) ────────────
 phase('Security')
 const secSeq = nextSeq()
 const security = await agent(
-  `You are Pueo 🦉, the night-owl security guard on the software development crew. Audit the project under ${base}/.
+  `You are Lucy 🦉, the night-owl security guard on the software development crew. Audit the project under ${base}/.
 
 Language: ${design.language}
 Run REAL tooling where it fits, using the Bash tool, then add your own careful review:
@@ -339,11 +339,11 @@ Run REAL tooling where it fits, using the Bash tool, then add your own careful r
 List the scanners you actually ran in toolsRun. Report real findings only — no boilerplate. If the
 project is clean, return an empty findings array.${
     emitBlock({ seq: secSeq, role: 'security', phase: 'Security' })}`,
-  { label: 'pueo:audit', phase: 'Security', schema: SECURITY_SCHEMA },
+  { label: 'lucy:audit', phase: 'Security', schema: SECURITY_SCHEMA },
 )
 
 const secActionable = security.findings.filter(f => f.severity === 'critical' || f.severity === 'high')
-log(`Pueo ran [${security.toolsRun.join(', ') || 'AI review only'}]: ` +
+log(`Lucy ran [${security.toolsRun.join(', ') || 'AI review only'}]: ` +
     `${security.findings.length} finding(s), ${secActionable.length} high/critical`)
 
 if (secActionable.length > 0) {
@@ -351,27 +351,27 @@ if (secActionable.length > 0) {
   const secList = secActionable
     .map(f => `- [${f.severity}] ${f.file}: ${f.issue}\n    Fix: ${f.fix}`).join('\n')
   await agent(
-    `You are Kai 🏄. Pueo found security issues in the project under ${base}/. Apply these fixes with
+    `You are Sylvie 🏄. Lucy found security issues in the project under ${base}/. Apply these fixes with
 Edit/Write, changing only what's needed to close each issue:
 
 ${secList}${
       emitBlock({ seq: secFixSeq, role: 'coder', phase: 'Security', to: 'scribe' })}`,
-    { label: 'kai:fix-security', phase: 'Security' },
+    { label: 'sylvie:fix-security', phase: 'Security' },
   )
 } else {
-  log('No high/critical security findings — nothing for Kai to patch.')
+  log('No high/critical security findings — nothing for Sylvie to patch.')
 }
 
-// ── Phase 7: Docs (Mahina) ────────────────────────────────────────────────────
+// ── Phase 7: Docs (Pearl) ────────────────────────────────────────────────────
 phase('Docs')
 const docSeq = nextSeq()
 await agent(
-  `You are Mahina 🌙, the scribe on the software development crew. Read the finished project under ${base}/ and write a
+  `You are Pearl 🌙, the scribe on the software development crew. Read the finished project under ${base}/ and write a
 clear README.md at ${base}/README.md using the Write tool. Include: a one-paragraph description, how to
 install/run it, a usage example with real input and expected output, how to run the tests, and a short
 "How it works" section. Keep it concise and accurate to the actual code.${
     emitBlock({ seq: docSeq, role: 'scribe', phase: 'Docs', to: null })}`,
-  { label: 'mahina:readme', phase: 'Docs' },
+  { label: 'pearl:readme', phase: 'Docs' },
 )
 
 return {

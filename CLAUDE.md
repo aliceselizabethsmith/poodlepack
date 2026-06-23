@@ -16,11 +16,11 @@ Each role is a distinctly colored/sized poodle with a persona name and accessory
 | Role | Persona | Poodle |
 |------|---------|--------|
 | Architect (lead) | **Opal** 🌺 | large **black** standard poodle |
-| Programmer | **Kai** 🏄 | mint surfer |
+| Programmer | **Sylvie** 🏄 | mint surfer |
 | Reviewer | **Starr** 🔍 | **black** standard poodle |
 | Tester | **Ruby** 🌺 | reddish |
-| Security | **Pueo** 🦉 | grey night-owl |
-| Scribe | **Mahina** 🌙 | cream |
+| Security | **Lucy** 🦉 | grey night-owl |
+| Scribe | **Pearl** 🌙 | cream |
 
 ## The pipeline
 
@@ -32,9 +32,9 @@ The orchestration lives in `.claude/workflows/build-app.js`. It uses:
 - Structured `schema` outputs pass clean data (file lists, review findings, test results, security
   findings) between phases.
 - **Test phase**: Ruby writes tests, runs them (pytest / `npm test` via Bash), and a bounded fix loop
-  (max 2 rounds) sends failures back to Kai until green.
-- **Security phase**: Pueo runs real scanners when they fit (`bandit -r` for Python, `npm audit` for
-  Node) plus an AI review, then high/critical findings go to Kai for a fix.
+  (max 2 rounds) sends failures back to Sylvie until green.
+- **Security phase**: Lucy runs real scanners when they fit (`bandit -r` for Python, `npm audit` for
+  Node) plus an AI review, then high/critical findings go to Sylvie for a fix.
 
 ## The crew window (kawaii Kauai visualizer)
 
