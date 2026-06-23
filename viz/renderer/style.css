@@ -1,0 +1,316 @@
+/* ── Kawaii Kauai crew window ─────────────────────────────────────────────── */
+:root {
+  --sand: #f6e0b5;
+  --sand-shadow: #e9c98c;
+  --bubble: #fffdf7;
+  --ink: #5b4636;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: "Comic Sans MS", "Segoe UI Rounded", "Quicksand", system-ui, sans-serif;
+  color: var(--ink);
+  user-select: none;
+}
+
+/* sunset sky → ocean → sand, stacked */
+#scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg,
+    #ffd1a9 0%,      /* peach sky */
+    #ffb6c1 26%,     /* candy pink */
+    #c9a7eb 46%,     /* lavender */
+    #7fd1e3 60%);    /* horizon teal */
+  overflow: hidden;
+}
+
+/* sun glow low on the horizon */
+.sun {
+  position: absolute;
+  left: 50%; top: 40%;
+  width: 150px; height: 150px;
+  margin-left: -75px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6c9 0%, #ffd56b 55%, rgba(255,213,107,0) 72%);
+  filter: blur(1px);
+  animation: sun-pulse 6s ease-in-out infinite;
+}
+@keyframes sun-pulse { 0%,100% { transform: scale(1); opacity: .95; } 50% { transform: scale(1.06); opacity: 1; } }
+
+.cloud {
+  position: absolute; top: 12%;
+  font-size: 44px; opacity: .9;
+  filter: drop-shadow(0 3px 0 rgba(255,255,255,.5));
+}
+.cloud-a { left: -10%; animation: drift 38s linear infinite; }
+.cloud-b { left: -30%; top: 20%; font-size: 32px; animation: drift 52s linear infinite; }
+@keyframes drift { from { transform: translateX(0); } to { transform: translateX(130vw); } }
+
+/* ocean band with shimmer */
+.ocean {
+  position: absolute; left: 0; right: 0; top: 56%;
+  height: 16%;
+  background: repeating-linear-gradient(180deg, #6fc6dd 0 10px, #5cb8d4 10px 20px);
+  opacity: .85;
+  box-shadow: inset 0 6px 12px rgba(255,255,255,.35);
+}
+/* the sand the pack stands on */
+#scene::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 40%;
+  background: linear-gradient(180deg, var(--sand) 0%, var(--sand-shadow) 100%);
+  box-shadow: inset 0 8px 18px rgba(255,255,255,.4);
+}
+
+.palm { position: absolute; bottom: 30%; font-size: 120px; line-height: 1; z-index: 2; }
+.palm-left  { left: -8px;  transform: scaleX(-1); animation: sway 5s ease-in-out infinite; }
+.palm-right { right: -8px; animation: sway 6s ease-in-out infinite; }
+@keyframes sway { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+.palm-left { animation-name: sway-left; }
+@keyframes sway-left { 0%,100% { transform: scaleX(-1) rotate(-2deg);} 50% { transform: scaleX(-1) rotate(2deg);} }
+
+/* ── HUD ──────────────────────────────────────────────────────────────────── */
+#hud {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 18px;
+  z-index: 6;
+}
+.title {
+  font-size: 26px; font-weight: 800; color: #fff;
+  text-shadow: 0 2px 0 #ff8fab, 0 4px 6px rgba(0,0,0,.18);
+  letter-spacing: .5px;
+}
+.title .lei { font-size: 22px; }
+.title .kauai { color: #fff3c4; }
+.spec {
+  flex: 1;
+  font-size: 14px; color: #6b4f3a;
+  background: rgba(255,255,255,.72);
+  border-radius: 14px; padding: 6px 14px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 2px 0 rgba(0,0,0,.06);
+}
+.phase-badge {
+  font-size: 14px; font-weight: 700; color: #fff;
+  background: linear-gradient(180deg, #ff9ac1, #ff6f91);
+  border-radius: 999px; padding: 6px 16px;
+  box-shadow: 0 3px 0 #d65078, inset 0 1px 0 rgba(255,255,255,.5);
+  white-space: nowrap;
+}
+
+/* ── chat history: scrolling, translucent conversation log ────────────────── */
+#chatlog {
+  position: absolute;
+  top: 60px; right: 2%;
+  width: 24%; max-width: 340px;
+  max-height: 34%;
+  overflow-y: auto;
+  overflow-x: hidden;       /* never show a horizontal scrollbar */
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 4px 6px;
+  z-index: 8;
+  scroll-behavior: smooth;
+}
+.logmsg {
+  background: rgba(255, 255, 255, .42);
+  border-left: 3px solid var(--c, #ff6f91);
+  border-radius: 10px;
+  padding: 4px 9px;
+  font-size: 11.5px; line-height: 1.3;
+  color: #45372b;
+  overflow-wrap: anywhere;  /* wrap long paths/tokens instead of overflowing sideways */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .07);
+  backdrop-filter: blur(2px);
+  animation: logIn .3s ease;
+}
+.logmsg .who { font-weight: 800; }
+.logmsg .logphase { font-size: 10px; opacity: .6; }
+@keyframes logIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+#chatlog::-webkit-scrollbar { width: 7px; }
+#chatlog::-webkit-scrollbar-thumb { background: rgba(255, 143, 177, .6); border-radius: 4px; }
+#chatlog::-webkit-scrollbar-track { background: transparent; }
+
+/* ── stage: the poodle pack ───────────────────────────────────────────────── */
+#stage {
+  position: absolute; left: 0; right: 0; bottom: 10%;
+  height: 60%;
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: clamp(6px, 2.2vw, 34px);
+  padding: 0 70px;
+  z-index: 5;
+}
+
+.poodle {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  transform-origin: bottom center;
+  animation: bob 3.2s ease-in-out infinite;
+  transition: filter .3s ease;
+}
+/* idle poodles keep their full color — only their nameplate dims */
+.poodle.dim .nameplate { opacity: .5; }
+.poodle.active { z-index: 9; }
+.poodle.active .pup { animation: dig .42s ease-in-out infinite; }
+.poodle.active .ring { opacity: 1; transform: scale(1); }
+.poodle.cheer .pup { animation: hop .5s ease infinite; }
+@keyframes bob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+/* keep the per-poodle scale (var --s) through the active/cheer animations so size never resets */
+/* "dig": an active poodle dips down and paws side to side, like digging in the sand */
+@keyframes dig   { 0%,100% { transform: scale(var(--s,1)) translateY(0) rotate(0);}
+                   35% { transform: scale(var(--s,1)) translateY(4px) rotate(-3deg);}
+                   70% { transform: scale(var(--s,1)) translateY(5px) rotate(3deg);} }
+@keyframes hop   { 0%,100% { transform: scale(var(--s,1)) translateY(0);} 40% { transform: scale(var(--s,1)) translateY(-15px);} }
+
+/* little sand puffs kicked up while a poodle digs */
+.sandpuff {
+  position: absolute; width: 11px; height: 11px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #f4dba6, #e0b878);
+  pointer-events: none; z-index: 4;
+  animation: puff .7s ease-out forwards;
+}
+@keyframes puff {
+  0%   { transform: translate(0, 0) scale(.4); opacity: .95; }
+  100% { transform: translate(var(--dx, 0), var(--dy, -28px)) scale(1.25); opacity: 0; }
+}
+
+.pup {
+  width: 110px; height: 130px; position: relative;
+  /* scale from the feet so bigger poodles grow upward, never down over the nameplate */
+  transform: scale(var(--s, 1));
+  transform-origin: bottom center;
+}
+.pup svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 6px 5px rgba(0,0,0,.18)); }
+
+/* glow ring under the active poodle */
+.ring {
+  position: absolute; bottom: -6px; left: 50%; width: 96px; height: 26px;
+  margin-left: -48px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,236,150,.95), rgba(255,236,150,0) 70%);
+  opacity: 0; transform: scale(.6); transition: all .3s ease;
+  z-index: -1;
+}
+
+.nameplate {
+  margin-top: 6px;
+  display: flex; align-items: center; gap: 5px;
+  font-size: 13px; font-weight: 700; color: #fff;
+  background: rgba(91,70,54,.78);
+  padding: 3px 10px; border-radius: 999px;
+  box-shadow: 0 2px 0 rgba(0,0,0,.15);
+  white-space: nowrap;
+}
+.nameplate .role { font-weight: 500; opacity: .85; font-size: 11px; }
+
+/* hibiscus tucked onto the head by the ear */
+.accessory {
+  position: absolute; top: 6px; right: 22px; z-index: 3;
+  animation: bob 2.6s ease-in-out infinite;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
+}
+.accessory svg { width: 27px; height: 27px; display: block; }
+
+/* ── speech bubbles ───────────────────────────────────────────────────────── */
+.bubble {
+  position: absolute; bottom: 142px; left: 50%;
+  width: max-content; max-width: 220px;
+  transform: translateX(-50%) scale(0);
+  background: var(--bubble);
+  color: var(--ink);
+  font-size: 13px; line-height: 1.3;
+  padding: 9px 13px; border-radius: 16px;
+  border: 2px solid #ffe3ef;
+  box-shadow: 0 6px 14px rgba(0,0,0,.16);
+  z-index: 20;
+  animation: pop-in .35s cubic-bezier(.2,1.5,.5,1) forwards;
+}
+.bubble.start { border-color: #cdeffd; }
+.bubble.done  { border-color: #d6f5d6; }
+.bubble::after {
+  content: ""; position: absolute; bottom: -9px; left: 50%; margin-left: -7px;
+  border-width: 9px 7px 0 7px; border-style: solid;
+  border-color: var(--bubble) transparent transparent transparent;
+}
+.bubble.fade { animation: pop-out .4s ease forwards; }
+@keyframes pop-in  { from { transform: translateX(-50%) scale(0);} to { transform: translateX(-50%) scale(1);} }
+@keyframes pop-out { to { transform: translateX(-50%) scale(.4); opacity: 0; } }
+
+/* ── flying handoff tokens ────────────────────────────────────────────────── */
+#fx { position: absolute; inset: 0; pointer-events: none; z-index: 18; }
+.token {
+  position: absolute; font-size: 26px;
+  transition: left 1.1s cubic-bezier(.4,0,.4,1), top 1.1s cubic-bezier(.4,-.4,.4,1.2), opacity 1.1s;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.25));
+}
+
+/* ── ticker ───────────────────────────────────────────────────────────────── */
+#ticker {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 6px 16px; z-index: 7;
+  font-size: 12px; color: #6b4f3a;
+  background: rgba(255,255,255,.55);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── question modal ───────────────────────────────────────────────────────── */
+#qmodal {
+  position: absolute; inset: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(91, 70, 54, .32);
+  backdrop-filter: blur(2px);
+}
+#qmodal.hidden { display: none; }
+.qcard {
+  width: min(440px, 82%);
+  background: var(--bubble);
+  border: 3px solid #ffe3ef;
+  border-radius: 22px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .28);
+  padding: 18px 20px 16px;
+  animation: pop-in .35s cubic-bezier(.2,1.5,.5,1);
+  transform-origin: center;
+}
+.qcard .qhead { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+.qcard .qflower { width: 30px; height: 30px; }
+.qcard .qwho { font-weight: 800; font-size: 15px; }
+.qcard .qwho small { font-weight: 600; color: #9a8674; }
+.qcard .qtext { font-size: 15px; line-height: 1.4; color: var(--ink); margin-bottom: 14px; }
+.qcard .qopts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.qcard .qopt {
+  border: 0; cursor: pointer;
+  background: linear-gradient(180deg, #ff9ac1, #ff6f91);
+  color: #fff; font-weight: 700; font-size: 13px;
+  padding: 8px 15px; border-radius: 999px;
+  box-shadow: 0 3px 0 #d65078, inset 0 1px 0 rgba(255,255,255,.5);
+  transition: transform .08s ease;
+}
+.qcard .qopt:hover { transform: translateY(-1px); }
+.qcard .qopt:active { transform: translateY(1px); box-shadow: 0 1px 0 #d65078; }
+.qcard .qrow { display: flex; gap: 8px; }
+.qcard .qinput {
+  flex: 1; font: inherit; font-size: 13px;
+  padding: 8px 12px; border-radius: 12px;
+  border: 2px solid #ffe3ef; outline: none; color: var(--ink);
+}
+.qcard .qinput:focus { border-color: #ff9ac1; }
+.qcard .qsend {
+  border: 0; cursor: pointer;
+  background: #2ec4b6; color: #fff; font-weight: 700; font-size: 13px;
+  padding: 8px 16px; border-radius: 12px;
+  box-shadow: 0 3px 0 #1f9488;
+}
+.qcard .qsend:active { transform: translateY(1px); box-shadow: 0 1px 0 #1f9488; }
+
+/* finale */
+.confetti {
+  position: absolute; top: -20px; font-size: 20px; z-index: 30;
+  animation: fall linear forwards;
+}
+@keyframes fall {
+  to { transform: translateY(110vh) rotate(540deg); opacity: .9; }
+}
