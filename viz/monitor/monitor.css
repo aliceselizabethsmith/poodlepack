@@ -1,0 +1,41 @@
+/* dashboard-specific tweaks layered on top of ../renderer/style.css */
+
+.kennel-label { color: #fff3c4; }
+
+.mutebtn {
+  border: 0; cursor: pointer;
+  background: rgba(255, 255, 255, .72);
+  font-size: 16px; line-height: 1;
+  padding: 6px 10px; border-radius: 999px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .08);
+}
+.mutebtn:active { transform: translateY(1px); }
+
+/* the stage holds a dynamic number of agents — center them, allow wrapping */
+#stage {
+  bottom: 8%;
+  gap: clamp(8px, 3vw, 48px);
+  flex-wrap: wrap;
+  align-content: flex-end;
+}
+
+/* persistent action bubble (vs the build window's transient ones) */
+.actionbubble {
+  max-width: 200px;
+  animation: pop-in .3s cubic-bezier(.2,1.5,.5,1);
+}
+.actionbubble.pulse { animation: bubble-pulse .5s ease; }
+@keyframes bubble-pulse {
+  0% { transform: translateX(-50%) scale(1); }
+  40% { transform: translateX(-50%) scale(1.07); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* idle "kennel is quiet" mood — soften the scene a touch */
+body.idle #stage::after {
+  content: "💤 the pack is napping";
+  position: absolute; left: 50%; bottom: 40%;
+  transform: translateX(-50%);
+  font-size: 18px; color: rgba(91, 70, 54, .55);
+  white-space: nowrap;
+}
