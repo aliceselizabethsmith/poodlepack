@@ -150,7 +150,7 @@ body {
   position: relative;
   display: flex; flex-direction: column; align-items: center;
   transform-origin: bottom center;
-  animation: bob 7s ease-in-out infinite; /* slow, calm idle bounce while holding */
+  animation: bob 9s ease-in-out infinite; /* slow, shallow breathing motion while holding */
   transition: filter .3s ease;
 }
 /* idle poodles keep their full color — only their nameplate dims */
@@ -159,7 +159,7 @@ body {
 .poodle.active .pup { animation: dig .42s ease-in-out infinite; }
 .poodle.active .ring { opacity: 1; transform: scale(1); }
 .poodle.cheer .pup { animation: hop .5s ease infinite; }
-@keyframes bob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes bob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
 /* keep the per-poodle scale (var --s) through the active/cheer animations so size never resets */
 /* "dig": an active poodle dips down and paws side to side, like digging in the sand */
 @keyframes dig   { 0%,100% { transform: scale(var(--s,1)) translateY(0) rotate(0);}
