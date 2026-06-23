@@ -33,7 +33,7 @@ async function loadScanner() {
 function createWindow() {
   win = new BrowserWindow({
     width: 1040, height: 620, minWidth: 720, minHeight: 460,
-    title: 'Poodle Vision 🐩',
+    title: 'PoodleDASH 🐩',
     backgroundColor: '#ffd9a0',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -42,7 +42,41 @@ function createWindow() {
   })
   win.removeMenu()
   win.loadFile(path.join(__dirname, 'index.html'))
-  win.webContents.once('did-finish-load', startPolling)
+  win.webContents.once('did-finish-load', () => {
+    if (process.env.DEVCREW_DEMO) startDemo()
+    else startPolling()
+  })
+}
+
+// DEVCREW_DEMO=1 : a scripted loop so you can verify every state — agents start
+// staggered, work (rotating actions), finish one by one (each a celebration),
+// linger, then leave to an idle kennel, then repeat.
+function startDemo() {
+  const defs = [
+    { id: 'demo-coder',    kind: 'coder',      task: 'Build a CSV-to-Markdown CLI',     actions: ['reading the spec', 'writing parser.py', 'running pytest -q'], done: 'Done — 14 tests pass.' },
+    { id: 'demo-research', kind: 'researcher',  task: 'Research Hawaiian music licensing', actions: ['searching the web', 'reading archive.org', 'drafting findings'],  done: 'Found 3 public-domain options.' },
+    { id: 'demo-security', kind: 'security',   task: 'Audit the auth module',           actions: ['running bandit', 'reading db.py', 'checking for injection'],   done: 'bandit: 0 findings — clean.' },
+    { id: 'demo-tester',   kind: 'tester',     task: 'Write tests for the API',         actions: ['writing test_api.py', 'running the suite'],                   done: 'All 22 tests pass.' },
+  ]
+  let t = 0
+  const tick = () => {
+    if (!win || win.isDestroyed()) return
+    const roster = []
+    defs.forEach((d, i) => {
+      const start = i * 2, doneAt = start + 9, gone = doneAt + 6
+      if (t < start || t >= gone) return
+      if (t < doneAt) {
+        const ai = Math.floor((t - start) / 2.6) % d.actions.length
+        roster.push({ agentId: d.id, kind: d.kind, task: d.task, action: d.actions[ai], state: 'working' })
+      } else {
+        roster.push({ agentId: d.id, kind: d.kind, task: d.task, action: d.done, state: 'done' })
+      }
+    })
+    win.webContents.send('roster', roster)
+    t = t >= 26 ? 0 : t + 1 // loop with a brief idle gap
+  }
+  setInterval(tick, 1000)
+  tick()
 }
 
 function startPolling() {

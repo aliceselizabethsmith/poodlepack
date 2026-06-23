@@ -2,6 +2,7 @@
    chat-history panel on the right. Layered on ../renderer/style.css. */
 
 .kennel-label { color: #fff3c4; }
+.title .dash { color: #ff6f91; }
 
 .mutebtn {
   border: 0; cursor: pointer;
@@ -34,8 +35,10 @@
 .agent-card .poodle { animation: bob 3.4s ease-in-out infinite; }
 .agent-card .pup { width: 94px; height: 112px; }
 .agent-card .ring { width: 78px; margin-left: -39px; bottom: 16px; }
-.agent-card .accessory { right: 31px; top: 16px; }
-.agent-card .accessory svg { width: 23px; height: 23px; }
+/* flower anchored to the pup now, tucked on the right side of the head */
+.agent-card .pup { position: relative; }
+.agent-card .accessory { right: 15px; top: 22px; }
+.agent-card .accessory svg { width: 22px; height: 22px; }
 .agent-card .nameplate { margin-top: 3px; font-size: 12px; padding: 3px 10px; max-width: 196px; }
 .agent-card .nameplate .role { font-size: 10px; }
 .agent-card .nameplate .pname { text-transform: capitalize; }
@@ -43,19 +46,20 @@
 /* the per-agent action bubble (in-flow, above its poodle) */
 .cardbubble {
   max-width: 190px; min-height: 14px;
-  background: var(--bubble);
-  border: 2px solid #ffe3ef; border-radius: 13px;
+  background: rgba(255, 253, 247, .55);   /* translucent across the board */
+  backdrop-filter: blur(3px);
+  border: 2px solid rgba(255, 227, 239, .7); border-radius: 13px;
   padding: 6px 11px; margin-bottom: 3px;
   font-size: 12px; line-height: 1.3; color: var(--ink);
   text-align: center;
   overflow-wrap: anywhere; word-break: break-word;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, .12);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
   position: relative;
 }
 .cardbubble::after {
   content: ""; position: absolute; bottom: -7px; left: 26px;
   border-width: 7px 6px 0 6px; border-style: solid;
-  border-color: var(--bubble) transparent transparent transparent;
+  border-color: rgba(255, 253, 247, .55) transparent transparent transparent;
 }
 .cardbubble.pulse { animation: cardpulse .5s ease; }
 @keyframes cardpulse { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }

@@ -90,6 +90,14 @@ muteBtn.addEventListener('click', () => {
   }
 })
 
+// if autoplay was blocked, kick the music off on the first interaction
+function ensureMusic() {
+  if (music && !muted && music.paused) music.play().catch(() => {})
+  if (audioCtx?.state === 'suspended') audioCtx.resume()
+}
+window.addEventListener('click', ensureMusic)
+window.addEventListener('keydown', ensureMusic)
+
 /* ── roster reconciliation ───────────────────────────────────────────────────*/
 const live = new Map() // agentId -> { el, poodleEl, bubbleEl, kind, action, state }
 
@@ -103,8 +111,7 @@ function makeCard(a) {
   poodle.className = 'poodle'
   poodle.innerHTML = `
     <div class="ring"></div>
-    <span class="accessory">${flowerSVG(s.flower)}</span>
-    <div class="pup" style="--s:1">${poodleSVG(s.color)}</div>
+    <div class="pup" style="--s:1">${poodleSVG(s.color)}<span class="accessory">${flowerSVG(s.flower)}</span></div>
     <div class="nameplate"><span class="pname">${a.kind}</span>
       <span class="role">${shortTask(a.task)}</span></div>`
   card.appendChild(bubble)
@@ -213,8 +220,7 @@ setInterval(() => {
   const pups = document.querySelectorAll('.poodle.active .pup')
   if (!pups.length) return
   const scene = document.getElementById('scene').getBoundingClientRect()
-  pups.forEach((pup, idx) => {
-    if (idx > 11) return // cap the work when the kennel is packed
+  pups.forEach((pup) => {
     const r = pup.getBoundingClientRect()
     const baseX = r.left - scene.left + r.width / 2
     const baseY = r.bottom - scene.top - 8
