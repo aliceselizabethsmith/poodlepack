@@ -150,7 +150,7 @@ body {
   position: relative;
   display: flex; flex-direction: column; align-items: center;
   transform-origin: bottom center;
-  animation: bob 3.2s ease-in-out infinite;
+  animation: bob 5s ease-in-out infinite; /* slow, calm idle bounce while holding */
   transition: filter .3s ease;
 }
 .poodle.dim { filter: saturate(.55) brightness(.92) opacity(.8); }
@@ -209,7 +209,7 @@ body {
 /* hibiscus tucked onto the head by the ear */
 .accessory {
   position: absolute; top: 6px; right: 22px; z-index: 3;
-  animation: bob 2.6s ease-in-out infinite;
+  animation: bob 4.2s ease-in-out infinite;
   filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
 }
 .accessory svg { width: 27px; height: 27px; display: block; }

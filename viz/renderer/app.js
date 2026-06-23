@@ -8,7 +8,7 @@ const ROLE_ORDER = ['architect', 'coder', 'reviewer', 'tester', 'security', 'scr
 const CAST_STYLE = {
   // Opal & Starr are black standard poodles; Ruby is the reddish one. Each wears a
   // different-colored Hawaiian hibiscus (the `flower` color).
-  architect: { color: '#22222a', size: 1.40, flower: '#ff4d6d', label: 'architect', flowerTop: -28 },
+  architect: { color: '#22222a', size: 1.40, flower: '#ff4d6d', label: 'architect', flowerTop: -36 },
   coder:     { color: '#7bdcb5', size: 1.00, flower: '#ff8c42', label: 'programmer' },
   reviewer:  { color: '#f3f0e9', size: 1.12, flower: '#a06bff', label: 'reviewer', flowerTop: -14, halo: true },
   tester:    { color: '#d96b63', size: 0.92, flower: '#ffcf33', label: 'tester' },
@@ -333,7 +333,8 @@ window.devcrew.onStatus((s) => {
   else if (s.state === 'error') { phaseBadge.textContent = 'uh-oh 🌧️'; tickerEl.textContent = s.message || 'the build hit a snag.' }
 })
 
-/* kick up a sandstorm at the feet of whichever poodle is digging (active) */
+/* kick up a big colorful sandstorm at the feet of whichever poodle is digging (active) */
+const SAND_COLORS = ['#f4dba6', '#e8b96f', '#f7e7c0', '#d99a55', '#ffe0a3', '#caa15f', '#f3c79b', '#e9a86b']
 setInterval(() => {
   const pup = document.querySelector('.poodle.active .pup')
   if (!pup || !fxLayer) return
@@ -341,18 +342,20 @@ setInterval(() => {
   const r = pup.getBoundingClientRect()
   const baseX = r.left - scene.left + r.width / 2
   const baseY = r.bottom - scene.top - 12
-  const count = 5 + Math.floor(Math.random() * 5) // 5-9 grains per burst
+  const count = 9 + Math.floor(Math.random() * 8) // 9-16 grains per burst
   for (let i = 0; i < count; i++) {
     const puff = document.createElement('div')
     puff.className = 'sandpuff'
-    const off = (Math.random() - 0.5) * 90          // wide spread
-    const size = 7 + Math.random() * 12             // varied grain sizes
+    const off = (Math.random() - 0.5) * 130         // very wide spread
+    const size = 6 + Math.random() * 16             // varied grain sizes
+    const color = SAND_COLORS[Math.floor(Math.random() * SAND_COLORS.length)]
     puff.style.width = puff.style.height = `${size}px`
+    puff.style.background = `radial-gradient(circle at 40% 35%, #fff3d6, ${color})`
     puff.style.left = `${baseX + off - size / 2}px`
-    puff.style.top = `${baseY + (Math.random() - 0.5) * 10}px`
-    puff.style.setProperty('--dx', `${off * 1.3}px`)
-    puff.style.setProperty('--dy', `${-30 - Math.random() * 45}px`) // higher arcs
+    puff.style.top = `${baseY + (Math.random() - 0.5) * 12}px`
+    puff.style.setProperty('--dx', `${off * 1.4}px`)
+    puff.style.setProperty('--dy', `${-36 - Math.random() * 60}px`) // higher arcs
     fxLayer.appendChild(puff)
-    setTimeout(() => puff.remove(), 900)
+    setTimeout(() => puff.remove(), 950)
   }
-}, 180)
+}, 120)
