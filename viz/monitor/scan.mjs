@@ -81,7 +81,10 @@ function actionOf(lines) {
       for (let j = e.message.content.length - 1; j >= 0; j--) {
         const b = e.message.content[j]
         if (b.type === 'tool_use') return toolPhrase(b.name, b.input)
-        if (b.type === 'text' && b.text && b.text.trim()) return b.text.trim().replace(/\s+/g, ' ').slice(0, 90)
+        if (b.type === 'text' && b.text && b.text.trim()) {
+          const t = b.text.trim().replace(/\s+/g, ' ')
+          return t.length > 64 ? `${t.slice(0, 64)}…` : t
+        }
       }
       return 'thinking…'
     }

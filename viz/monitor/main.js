@@ -86,6 +86,9 @@ function startPolling() {
 
 ipcMain.handle('active-ms', () => ACTIVE_MS)
 
+// allow the gentle Hawaiian loop to start without a user gesture
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
+
 app.whenReady().then(async () => { await loadScanner(); writeLock(); createWindow() })
 app.on('window-all-closed', () => { clearLock(); app.quit() })
 app.on('quit', clearLock)
