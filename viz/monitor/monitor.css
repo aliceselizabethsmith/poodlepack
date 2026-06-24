@@ -1,27 +1,17 @@
 /* dashboard layout: a grid of small poodle "cards" on the left, a scrolling
    chat-history panel on the right. Layered on ../renderer/style.css. */
 
-.kennel-label { color: #fff3c4; }
-.title .dash { color: #ff6f91; }
-
-.mutebtn {
-  border: 0; cursor: pointer;
-  background: rgba(255, 255, 255, .72);
-  font-size: 16px; line-height: 1;
-  padding: 6px 10px; border-radius: 999px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, .08);
-}
-.mutebtn:active { transform: translateY(1px); }
-
 /* the kennel: a wrapping grid of small agent cards, scrolls if it overflows */
 #stage {
   position: absolute;
   left: 1.5%; right: 26.5%; top: 56px; bottom: 30px;
   height: auto;            /* override style.css's height:60% so top+bottom = full height */
   display: flex; flex-wrap: wrap;
-  align-content: space-evenly; justify-content: space-evenly;
+  /* anchor the pack to the bottom so they stand on the sand — with one or two agents
+     they stay on the beach instead of floating mid-scene over the water */
+  align-content: flex-end; justify-content: space-evenly;
   gap: 8px;
-  padding: 8px 6px;
+  padding: 8px 6px 10px;
   overflow-y: auto;
 }
 

@@ -184,12 +184,12 @@ function addLog(role, persona, text, phase) {
 }
 
 function spotlight(role) {
-  for (const r in chars) chars[r].el.classList.toggle('dim', r !== role)
-  chars[role]?.el.classList.add('active')
-  // work moved on: drop every other dog's active state AND its lingering bubble
-  for (const r in chars) if (r !== role) {
-    chars[r].el.classList.remove('active')
-    chars[r].el.querySelector('.bubble')?.remove()
+  for (const r in chars) {
+    const isActive = r === role
+    chars[r].el.classList.toggle('dim', !isActive)
+    chars[r].el.classList.toggle('active', isActive)
+    // work moved on: clear every other dog's lingering bubble
+    if (!isActive) chars[r].el.querySelector('.bubble')?.remove()
   }
 }
 
@@ -325,7 +325,8 @@ function renderNextQuestion() {
 window.devcrew.onManifest((m) => {
   if (m.spec) specEl.textContent = m.spec
   const cast = Array.isArray(m.cast) ? m.cast : []
-  cast.slice().sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role))
+  // unknown roles (indexOf -1) sort last, not first
+  cast.slice().sort((a, b) => (ROLE_ORDER.indexOf(a.role) + 1 || 99) - (ROLE_ORDER.indexOf(b.role) + 1 || 99))
       .forEach(c => ensureChar(c.role, c.persona))
 })
 

@@ -15,6 +15,11 @@ const path = require('path')
 const IS_WIN = process.platform === 'win32'
 const PS_HELPER = path.join(__dirname, 'play-audio.ps1')
 const STOP_HELPER = path.join(__dirname, 'stop-audio.ps1')
+// Full path to Windows PowerShell 5.1 so playback works even when `powershell` isn't on
+// PATH and never accidentally resolves to PowerShell 7 (`pwsh`, no WPF MediaPlayer).
+const POWERSHELL = process.env.SystemRoot
+  ? path.join(process.env.SystemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
+  : 'powershell'
 
 let musicProc = null
 let lastChime = 0
@@ -24,11 +29,12 @@ const clamp01 = (x) => Math.max(0, Math.min(1, x))
 // Spawn the platform player for `file`. `loop` repeats forever (music) vs once (chime).
 function spawnPlayer(file, volume, loop) {
   if (IS_WIN) {
-    // -STA + a Dispatcher message pump (inside the .ps1) so MediaPlayer events fire.
-    const args = ['-NoProfile', '-STA', '-ExecutionPolicy', 'Bypass', '-File', PS_HELPER,
-      '-Path', file, '-Volume', String(clamp01(volume / 100))]
+    // No -STA: Windows PowerShell 5.1 is already STA by default, and passing -STA makes
+    // it re-spawn a child host (two processes, harder to kill cleanly).
+    const args = ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', PS_HELPER,
+      '-Path', file, '-Volume', String(clamp01(volume / 100)), '-ParentPid', String(process.pid)]
     if (loop) args.push('-Loop')
-    return spawn('powershell', args, { stdio: 'ignore', windowsHide: true })
+    return spawn(POWERSHELL, args, { stdio: 'ignore', windowsHide: true })
   }
   const args = ['-nodisp', '-autoexit', '-loglevel', 'quiet']
   if (loop) args.push('-loop', '0')
@@ -40,22 +46,36 @@ function spawnPlayer(file, volume, loop) {
 function startMusic(file, volume = 40) {
   if (musicProc || !file) return
   try {
-    musicProc = spawnPlayer(file, volume, true)
-    musicProc.on('error', () => { musicProc = null }) // player missing -> stay silent
-    musicProc.on('exit', () => { musicProc = null })
+    const p = spawnPlayer(file, volume, true)
+    p.on('error', () => { if (musicProc === p) musicProc = null }) // player missing -> silent
+    p.on('exit', () => { if (musicProc === p) musicProc = null })
+    musicProc = p
   } catch { musicProc = null }
 }
 
 function stopMusic() {
-  if (musicProc) { try { musicProc.kill() } catch {} musicProc = null }
-  // On Windows the -STA host can spawn a child / a hard kill can orphan it, so sweep
-  // by script name (synchronously, so it's gone before the app quits on window close).
-  if (IS_WIN) {
-    try { execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${STOP_HELPER}"`, { stdio: 'ignore' }) } catch {}
+  const p = musicProc
+  musicProc = null
+  if (!p) return
+  // The -STA host can spawn a child, so kill the whole tree. taskkill /T is fast
+  // (~50ms) — no per-name PowerShell sweep, so the mute toggle doesn't stutter. The
+  // helper's own parent-death watchdog covers the case where we never get here (crash).
+  if (IS_WIN && p.pid) {
+    try { execSync(`taskkill /F /T /PID ${p.pid}`, { stdio: 'ignore' }) } catch {}
+  } else {
+    try { p.kill() } catch {}
   }
 }
 
 function isMusicPlaying() { return !!musicProc }
+
+// Safety net (call at startup): kill any ORPHANED music helper from a previous instance
+// that crashed before its own watchdog fired. stop-audio.ps1 only kills helpers whose
+// parent process is gone, so this never silences another open window's music.
+function sweepOrphans() {
+  if (!IS_WIN) return
+  try { execSync(`"${POWERSHELL}" -NoProfile -ExecutionPolicy Bypass -File "${STOP_HELPER}"`, { stdio: 'ignore' }) } catch {}
+}
 
 // Play a short sound once. De-bounced so a burst of completions yields one chime.
 function playChime(file, { debounceMs = 900, volume = 70 } = {}) {
@@ -69,4 +89,4 @@ function playChime(file, { debounceMs = 900, volume = 70 } = {}) {
   } catch {}
 }
 
-module.exports = { startMusic, stopMusic, isMusicPlaying, playChime }
+module.exports = { startMusic, stopMusic, isMusicPlaying, playChime, sweepOrphans }

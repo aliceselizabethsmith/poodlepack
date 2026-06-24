@@ -10,14 +10,12 @@
 // `ensure` is idempotent via a lockfile the Electron main process maintains, so a
 // hook can call it on every background-agent spawn without piling up windows.
 
-import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { spawnWindow } from './launch.mjs'
 
-const require = createRequire(import.meta.url)
 const VIZ_DIR = path.dirname(fileURLToPath(import.meta.url))
 const MAIN = path.join(VIZ_DIR, 'monitor', 'main.js')
 const LOCK = path.join(os.homedir(), '.devcrew', 'monitor.lock')
@@ -34,12 +32,7 @@ function isRunning() {
 }
 
 function launch(extraEnv = {}) {
-  // Strip ELECTRON_RUN_AS_NODE so a real window opens from inside an Electron host.
-  const env = { ...process.env, ...extraEnv }
-  delete env.ELECTRON_RUN_AS_NODE
-  const electron = require('electron') // resolves to the platform's Electron binary (Win/mac/Linux)
-  const child = spawn(electron, [MAIN], { env, detached: true, stdio: 'ignore', shell: false })
-  child.unref()
+  spawnWindow([MAIN], { env: extraEnv })
 }
 
 function ensure() {
@@ -70,8 +63,12 @@ if (cmd === 'ensure') {
   let payload = ''
   process.stdin.setEncoding('utf8')
   process.stdin.on('data', (d) => { payload += d })
+  process.stdin.on('error', () => process.exit(0))
   process.stdin.on('end', () => {
-    if (/"(run_in_background|background)"\s*:\s*true/.test(payload)) ensure()
+    // parse the payload and check the real field, not a loose substring match
+    let background = false
+    try { background = JSON.parse(payload)?.tool_input?.run_in_background === true } catch {}
+    if (background) ensure()
     process.exit(0)
   })
   setTimeout(() => process.exit(0), 2500) // never hang the host if stdin stays open

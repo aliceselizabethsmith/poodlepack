@@ -3,9 +3,9 @@ export const meta = {
   description: 'ChatDev-style kawaii crew: design, code, review, fix, test, secure, and document an app from a one-line spec',
   whenToUse: 'When you want to turn a one-line software spec into a working project under projects/<name>/, optionally animated live in the kawaii Kauai crew window',
   phases: [
-    { title: 'Design', detail: 'Leilani the architect picks language + file structure' },
+    { title: 'Design', detail: 'Opal the architect picks language + file structure' },
     { title: 'Code', detail: 'Sylvie codes one file per programmer, in parallel' },
-    { title: 'Review', detail: 'Koa reads the code for bugs and gaps' },
+    { title: 'Review', detail: 'Starr reads the code for bugs and gaps' },
     { title: 'Fix', detail: 'Sylvie applies the confirmed review findings' },
     { title: 'Test', detail: 'Ruby writes + runs tests, then a fix loop until green' },
     { title: 'Security', detail: 'Lucy runs scanners + an AI security review, then fixes' },
@@ -208,7 +208,7 @@ const SECURITY_SCHEMA = {
   },
 }
 
-// ── Phase 1: Design (Leilani) ─────────────────────────────────────────────────
+// ── Phase 1: Design (Opal) ─────────────────────────────────────────────────
 phase('Design')
 const designSeq = nextSeq()
 const design = await agent(
@@ -258,7 +258,7 @@ sibling files above exist and import/reference them as designed.${
   )
 }))
 
-// ── Phase 3: Review (Koa) ─────────────────────────────────────────────────────
+// ── Phase 3: Review (Starr) ─────────────────────────────────────────────────────
 phase('Review')
 const reviewSeq = nextSeq()
 const review = await agent(

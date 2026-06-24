@@ -4,25 +4,22 @@
 //
 //   node viz/demo.mjs        (run from the devcrew repo root)
 
-import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import path from 'node:path'
-
-const require = createRequire(import.meta.url)
+import { spawnWindow, seedRunDir } from './launch.mjs'
 
 const VIZ_DIR = path.dirname(fileURLToPath(import.meta.url))
 const RUN_DIR = path.join(process.cwd(), '.devcrew', 'run')
 const EVENTS_DIR = path.join(RUN_DIR, 'events')
 
 const CAST = [
-  { role: 'architect', persona: 'Opal',   emoji: '🌺', color: '#22222a' },
-  { role: 'coder',     persona: 'Sylvie',    emoji: '🏄', color: '#7bdcb5' },
-  { role: 'reviewer',  persona: 'Starr',  emoji: '🔍', color: '#2b2b34' },
-  { role: 'tester',    persona: 'Ruby',   emoji: '🌺', color: '#d96b63' },
-  { role: 'security',  persona: 'Lucy',   emoji: '🦉', color: '#9aa0b5' },
-  { role: 'scribe',    persona: 'Pearl', emoji: '🌙', color: '#ffd166' },
+  { role: 'architect', persona: 'Opal' },
+  { role: 'coder',     persona: 'Sylvie' },
+  { role: 'reviewer',  persona: 'Starr' },
+  { role: 'tester',    persona: 'Ruby' },
+  { role: 'security',  persona: 'Lucy' },
+  { role: 'scribe',    persona: 'Pearl' },
 ]
 const PHASES = ['Design', 'Code', 'Review', 'Fix', 'Test', 'Security', 'Docs']
 const SPEC = 'a command-line password generator with flags for length and character toggles'
@@ -48,25 +45,8 @@ const SCRIPT = [
 const personaOf = role => CAST.find(c => c.role === role)?.persona || role
 const pad4 = n => String(n).padStart(4, '0')
 
-// fresh folder
-fs.rmSync(RUN_DIR, { recursive: true, force: true })
-fs.mkdirSync(EVENTS_DIR, { recursive: true })
-fs.mkdirSync(path.join(RUN_DIR, 'questions'), { recursive: true })
-fs.mkdirSync(path.join(RUN_DIR, 'answers'), { recursive: true })
-fs.writeFileSync(path.join(RUN_DIR, 'manifest.json'),
-  JSON.stringify({ spec: SPEC, projectName: null, startedSeq: 0, cast: CAST, phases: PHASES }, null, 2))
-fs.writeFileSync(path.join(RUN_DIR, 'status.json'), JSON.stringify({ state: 'running' }))
-
-// open the window. Strip ELECTRON_RUN_AS_NODE — if it's set (e.g. when launched from
-// inside another Electron app) it forces Electron to run as plain Node and no window opens.
-const childEnv = { ...process.env, DEVCREW_RUN_DIR: RUN_DIR }
-delete childEnv.ELECTRON_RUN_AS_NODE
-const electronExe = require('electron') // resolves to the platform's Electron binary (Win/mac/Linux)
-const child = spawn(electronExe, ['.'], {
-  cwd: VIZ_DIR, env: childEnv,
-  detached: true, stdio: 'ignore', shell: false,
-})
-child.unref()
+seedRunDir(RUN_DIR, { spec: SPEC, projectName: null, startedSeq: 0, cast: CAST, phases: PHASES })
+spawnWindow(['.'], { cwd: VIZ_DIR, env: { DEVCREW_RUN_DIR: RUN_DIR } })
 
 // stream the script, one beat every 1.3s (start a little after the window opens)
 let seq = 0

@@ -10,8 +10,8 @@ const fs = require('fs')
 const fsp = require('fs/promises')
 const audio = require('./audio')
 
-// Gentle Hawaiian loop while the crew works; a chime when they ship. Both go through
-// the shared cross-platform helper (ffplay), which no-ops silently if ffplay is absent.
+// Gentle Hawaiian loop while the crew works; a chime when they ship. Audio goes through
+// the shared helper (viz/audio.js): .NET MediaPlayer on Windows, ffplay on macOS/Linux.
 const MUSIC_FILE = path.join(__dirname, 'assets', 'music', 'aloha-oe-loud.mp3')
 const CHIME_FILE = path.join(__dirname, 'assets', 'sounds', 'tada.wav')
 // After the crew ships, let the celebration play out, then close the window on its own.
@@ -133,9 +133,6 @@ function startWatching() {
   win.on('closed', () => clearInterval(timer))
 }
 
-// Let the renderer ask where it's watching (handy for the header).
-ipcMain.handle('run-dir', () => RUN_DIR)
-
 // The renderer submits the user's answer; we write it where the waiting agent polls.
 ipcMain.handle('answer', async (_e, payload) => {
   if (!payload || !payload.id) return false
@@ -148,9 +145,14 @@ ipcMain.handle('answer', async (_e, payload) => {
 })
 
 // Mute toggle from the renderer: true resumes the loop, false stops it.
-ipcMain.handle('music', (_e, on) => { on ? audio.startMusic(MUSIC_FILE) : audio.stopMusic() })
+ipcMain.handle('music', (_e, on) => {
+  if (on) audio.startMusic(MUSIC_FILE); else audio.stopMusic()
+  return audio.isMusicPlaying()
+})
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => { audio.sweepOrphans(); createWindow() }).catch((err) => {
+  console.error('PoodlePack failed to start:', err); app.quit()
+})
 app.on('window-all-closed', () => { audio.stopMusic(); app.quit() })
 app.on('before-quit', audio.stopMusic)
 app.on('activate', () => {

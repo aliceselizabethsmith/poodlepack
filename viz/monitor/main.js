@@ -9,11 +9,14 @@ const os = require('os')
 const { pathToFileURL } = require('url')
 const audio = require('../audio')
 
-// Gentle music loop + a finale chime, both through the shared cross-platform helper
-// (ffplay). Silent no-op if ffplay isn't installed, so the kennel still runs.
+// Gentle music loop + a finale chime via the shared helper (viz/audio.js): .NET
+// MediaPlayer on Windows, ffplay on macOS/Linux. Silent no-op if the player is absent.
 const MUSIC_FILE = path.join(__dirname, '..', 'assets', 'music', 'aloha-oe-loud.mp3')
 const CHIME_FILE = path.join(__dirname, '..', 'assets', 'sounds', 'tada.wav')
-ipcMain.handle('music', (_e, on) => { on ? audio.startMusic(MUSIC_FILE) : audio.stopMusic(); return audio.isMusicPlaying() })
+ipcMain.handle('music', (_e, on) => {
+  if (on) audio.startMusic(MUSIC_FILE); else audio.stopMusic()
+  return audio.isMusicPlaying()
+})
 ipcMain.on('chime', () => audio.playChime(CHIME_FILE))
 
 // lockfile so the launcher's `ensure` never opens a second window
@@ -29,6 +32,9 @@ const ACTIVE_MS = Number(process.env.DEVCREW_ACTIVE_MS) || 60_000
 // how long a finished agent lingers before leaving — just long enough to play out
 // the celebration burst, then it's gone (no hanging around the kennel afterward)
 const LINGER_MS = Number(process.env.DEVCREW_LINGER_MS) || 4_000
+// once every agent is gone (and we showed at least one), close the kennel after this
+// grace period — long enough to ride out staggered finishes / brief gaps between agents
+const IDLE_CLOSE_MS = Number(process.env.DEVCREW_IDLE_CLOSE_MS) || 10_000
 
 let scan // loaded from the ESM scanner
 let win = null
@@ -50,10 +56,6 @@ function createWindow() {
     },
   })
   win.removeMenu()
-  // capture renderer console to a file so we can diagnose audio
-  win.webContents.on('console-message', (_e, _lvl, message) => {
-    try { fs.appendFileSync(path.join(os.homedir(), '.devcrew', 'renderer.log'), message + '\n') } catch {}
-  })
   win.loadFile(path.join(__dirname, 'index.html'))
   win.webContents.once('did-finish-load', () => {
     audio.startMusic(MUSIC_FILE)
@@ -126,13 +128,16 @@ function startDemo() {
     win.webContents.send('roster', roster)
     t = t >= 26 ? 0 : t + 1 // loop with a brief idle gap
   }
-  setInterval(tick, 1000)
+  const timer = setInterval(tick, 1000)
   tick()
+  win.on('closed', () => clearInterval(timer))
 }
 
 function startPolling() {
-  const seenDone = new Map()    // agentId -> when it finished (linger then drop)
+  const seenDone = new Map()    // agentId -> { at, agent } (last-known record; linger then drop)
   let prevWorking = new Set()   // ids that were working on the previous tick
+  let hadAgents = false         // have we shown any agent this session?
+  let idleCloseTimer = null     // pending auto-close once everyone's done
 
   const tick = () => {
     if (!win || win.isDestroyed() || !scan) return
@@ -152,42 +157,46 @@ function startPolling() {
         roster.push({ ...a, state: 'working' })
       }
     }
-    // edge-based finish: anything working last tick but not now just completed
+    // edge-based finish: anything working last tick but not now just completed. Cache
+    // its last-known record so the celebration still renders even if the transcript
+    // ages out of the scan window during the linger.
     for (const id of prevWorking) {
-      if (!nowWorking.has(id) && !seenDone.has(id)) seenDone.set(id, now)
+      if (!nowWorking.has(id) && !seenDone.has(id)) {
+        const a = byId.get(id)
+        if (a) seenDone.set(id, { at: now, agent: a })
+      }
     }
     // lingering 'done' poodles (celebrate), and prune the rest so the map can't grow
-    for (const [id, t] of seenDone) {
-      if (now - t < LINGER_MS) {
-        const a = byId.get(id)
-        if (a) roster.push({ ...a, state: 'done' })
-      } else {
-        seenDone.delete(id)
-      }
+    for (const [id, rec] of seenDone) {
+      if (now - rec.at < LINGER_MS) roster.push({ ...rec.agent, state: 'done' })
+      else seenDone.delete(id)
     }
     prevWorking = nowWorking
 
     // de-dupe, newest first; cap at 16 (the workflow fan-out ceiling), renderer auto-fits
     const out = new Map()
     for (const r of roster) if (!out.has(r.agentId)) out.set(r.agentId, r)
-    win.webContents.send('roster', [...out.values()].slice(0, 16))
+    const live = [...out.values()].slice(0, 16)
+    win.webContents.send('roster', live)
+
+    // auto-close once the run is over: after we've shown activity, a sustained empty
+    // roster means every agent finished — close the kennel (the grace period rides out
+    // staggered finishes and brief gaps). Reappearing agents cancel the pending close.
+    if (live.length > 0) {
+      hadAgents = true
+      if (idleCloseTimer) { clearTimeout(idleCloseTimer); idleCloseTimer = null }
+    } else if (hadAgents && !idleCloseTimer) {
+      idleCloseTimer = setTimeout(() => { if (win && !win.isDestroyed()) win.close() }, IDLE_CLOSE_MS)
+    }
   }
 
   const timer = setInterval(tick, 1400)
   tick()
-  win.on('closed', () => clearInterval(timer))
+  win.on('closed', () => { clearInterval(timer); if (idleCloseTimer) clearTimeout(idleCloseTimer) })
 }
 
-ipcMain.handle('active-ms', () => ACTIVE_MS)
-
-// allow the gentle Hawaiian loop to start without a user gesture
-app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
-// Known Electron/Windows bug: the out-of-process audio service can fail to reach
-// the output device — the page "plays" (clock advances) but no sound comes out.
-// Forcing audio in-process fixes the silent-output case.
-app.commandLine.appendSwitch('disable-features', 'AudioServiceOutOfProcess,AudioServiceSandbox')
-
-app.whenReady().then(async () => { await loadScanner(); writeLock(); createWindow() })
+app.whenReady().then(async () => { audio.sweepOrphans(); await loadScanner(); writeLock(); createWindow() })
+  .catch((err) => { console.error('PoodlePack kennel failed to start:', err); app.quit() })
 app.on('window-all-closed', () => { audio.stopMusic(); clearLock(); app.quit() })
 app.on('before-quit', audio.stopMusic)
 app.on('quit', () => { audio.stopMusic(); clearLock() })

@@ -8,6 +8,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
+import { pathToFileURL } from 'node:url'
 
 export const PROJECTS_DIR = path.join(os.homedir(), '.claude', 'projects')
 const ACTIVE_MS = 45_000 // a transcript touched within this window = the agent is live
@@ -141,7 +142,6 @@ export function scan({ activeMs = ACTIVE_MS, maxReadAgeMs = Infinity } = {}) {
           mtimeMs: st.mtimeMs,
           ageMs: age,
           active: age < activeMs,
-          isWorkflow: file.includes(`${path.sep}workflows${path.sep}`),
           task: cleanTask(full),
           kind: kindOf(full),
           action: actionOf(lines),
@@ -153,7 +153,7 @@ export function scan({ activeMs = ACTIVE_MS, maxReadAgeMs = Infinity } = {}) {
 }
 
 // CLI: `node scan.mjs` (active only) | `node scan.mjs --all`
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('scan.mjs')) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const all = process.argv.includes('--all')
   const agents = scan({ activeMs: all ? Infinity : ACTIVE_MS })
   const show = all ? agents : agents.filter(a => a.active)
