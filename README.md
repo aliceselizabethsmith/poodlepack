@@ -1,6 +1,6 @@
 # PoodlePack 🐩🌺
 
-**Watch your [Claude Code](https://docs.claude.com/en/docs/claude-code) agents work as a pack of kawaii poodles on a Kauai beach.**
+**Watch your [Claude Code](https://docs.claude.com/en/docs/claude-code) agents work as a pack of poodles. Pass complex dev tasks through the Poodle Pipeline.**
 
 PoodlePack is a pair of little Electron windows that make Claude Code's multi-agent work *visible* and *fun*. It has two modes:
 
