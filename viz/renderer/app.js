@@ -27,6 +27,7 @@ const qmodal = document.getElementById('qmodal')
 const answeredQ = new Set()
 const questionQueue = []
 let qActive = false
+let finished = false   // once the crew ships, stop digging/spotlighting — just celebrate
 
 const chars = {}   // role -> { el, pup, persona, style }
 let svgSeq = 0
@@ -209,9 +210,16 @@ function handoff(fromRole, toRole, emoji) {
 
 /* ── finale ───────────────────────────────────────────────────────────────── */
 function celebrate(ok) {
-  // The whole pack stays up and bounces (the .cheer hop loops) for the finale.
-  for (const r in chars) { chars[r].el.classList.remove('dim'); chars[r].el.classList.add('cheer') }
+  finished = true
+  // Everyone stops working — no more digging or sandstorm — and just bounces for joy.
+  for (const r in chars) {
+    chars[r].el.classList.remove('dim', 'active')
+    chars[r].el.classList.add('cheer')
+  }
   phaseBadge.textContent = ok === false ? 'finished (with notes)' : 'shipped! 🎉'
+  tickerEl.textContent = ok === false
+    ? '🌺 all done — shipped with a few notes. the pack is celebrating on the beach!'
+    : '🎉 shipped! the whole pack is celebrating on the beach. 🌺🐩'
   // Re-burst a few times while they bounce, so the finish really lands.
   const BURSTS = 4
   for (let n = 0; n < BURSTS; n++) setTimeout(confettiBurst, n * 1500)
@@ -316,7 +324,7 @@ window.devcrew.onManifest((m) => {
 })
 
 window.devcrew.onEvent((evt) => {
-  if (!evt || !evt.role) return
+  if (!evt || !evt.role || finished) return
   const c = ensureChar(evt.role, evt.persona)
   if (evt.projectName) specEl.textContent = `building “${evt.projectName}” 🛠️`
   if (evt.phase) phaseBadge.textContent = evt.phase
@@ -367,3 +375,13 @@ setInterval(() => {
     setTimeout(() => puff.remove(), 950)
   }
 }, 120)
+
+/* ── mute toggle (music is owned by the main process via ffplay) ───────────── */
+const muteBtn = document.getElementById('mute')
+let muted = false
+muteBtn?.addEventListener('click', () => {
+  muted = !muted
+  muteBtn.textContent = muted ? '🔇' : '🔊'
+  muteBtn.classList.toggle('muted', muted)
+  window.devcrew.setMusic(!muted)
+})
