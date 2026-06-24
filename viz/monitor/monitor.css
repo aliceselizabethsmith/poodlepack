@@ -39,7 +39,7 @@
 .agent-card .pup { position: relative; }
 .agent-card .accessory { right: 15px; top: 22px; }
 .agent-card .accessory svg { width: 22px; height: 22px; }
-.agent-card .nameplate { margin-top: 3px; font-size: 12px; padding: 3px 10px; max-width: 196px; }
+.agent-card .nameplate { margin-top: 14px; font-size: 12px; padding: 3px 10px; max-width: 196px; }
 .agent-card .nameplate .role { font-size: 10px; }
 .agent-card .nameplate .pname { text-transform: capitalize; }
 
@@ -61,7 +61,14 @@
   border-width: 7px 6px 0 6px; border-style: solid;
   border-color: rgba(255, 253, 247, .38) transparent transparent transparent;
 }
+/* show the action in full if it fits in 2 lines; clamp + hover-for-full if longer */
+.cardbubble .bubbletext {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cardbubble[title] { cursor: default; }
 .cardbubble.pulse { animation: cardpulse .5s ease; }
+/* chat-history entries keep their original shape; hover (title attr) shows full text */
 @keyframes cardpulse { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
 
 /* scrolling chat history (reuses #chatlog from style.css; make it taller here) */
@@ -72,10 +79,12 @@
   gap: 8px;
 }
 
-/* idle mood */
+/* idle mood — centered in the stage */
 body.idle #stage::after {
   content: "💤 the pack is napping — no background agents running";
-  margin: auto;
-  font-size: 16px; color: rgba(91, 70, 54, .55);
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  transform: translateY(-50%);
   text-align: center;
+  font-size: 16px; color: rgba(91, 70, 54, .55);
 }

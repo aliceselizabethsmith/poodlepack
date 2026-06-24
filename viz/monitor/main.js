@@ -29,7 +29,11 @@ function stopMusic() {
   // make sure the actual player is gone so audio never outlives the window
   try { exec('taskkill /F /IM ffplay.exe') } catch {}
 }
+let lastChime = 0
 function playChime() {
+  const now = Date.now()
+  if (now - lastChime < 900) return // de-bounce: one sound even if several finish together
+  lastChime = now
   exec(`powershell -NoProfile -Command "(New-Object Media.SoundPlayer 'C:\\Windows\\Media\\tada.wav').PlaySync()"`)
 }
 ipcMain.handle('music', (_e, on) => { if (on) startMusic(); else stopMusic(); return !!musicProc })
@@ -113,39 +117,46 @@ function startDemo() {
 }
 
 function startPolling() {
-  const seenDone = new Map() // agentId -> when it finished (for linger then drop)
+  const seenDone = new Map()    // agentId -> when it finished (linger then drop)
+  let prevWorking = new Set()   // ids that were working on the previous tick
 
   const tick = () => {
     if (!win || win.isDestroyed() || !scan) return
     let all = []
-    try { all = scan({ activeMs: Infinity }) } catch { all = [] }
+    // only read transcripts fresh enough to possibly be in the roster (perf)
+    try { all = scan({ maxReadAgeMs: ACTIVE_MS + LINGER_MS + 5000 }) } catch { all = [] }
 
     const now = Date.now()
+    const byId = new Map(all.map(a => [a.agentId, a]))
+    const nowWorking = new Set()
     const roster = []
+
     for (const a of all) {
       if (a.ageMs < ACTIVE_MS) {
+        nowWorking.add(a.agentId)
         seenDone.delete(a.agentId)
         roster.push({ ...a, state: 'working' })
-      } else if (seenDone.has(a.agentId)) {
-        // recently went quiet → linger as 'done' for a bit, then drop
-        const since = now - seenDone.get(a.agentId)
-        if (since < LINGER_MS) roster.push({ ...a, state: 'done' })
       }
     }
-    // mark newly-quiet agents (were active last tick, now stale) as just-finished
-    for (const a of all) {
-      if (a.ageMs >= ACTIVE_MS && a.ageMs < ACTIVE_MS + 4000 && !seenDone.has(a.agentId)) {
-        seenDone.set(a.agentId, now)
-        roster.push({ ...a, state: 'done' })
+    // edge-based finish: anything working last tick but not now just completed
+    for (const id of prevWorking) {
+      if (!nowWorking.has(id) && !seenDone.has(id)) seenDone.set(id, now)
+    }
+    // lingering 'done' poodles (celebrate), and prune the rest so the map can't grow
+    for (const [id, t] of seenDone) {
+      if (now - t < LINGER_MS) {
+        const a = byId.get(id)
+        if (a) roster.push({ ...a, state: 'done' })
+      } else {
+        seenDone.delete(id)
       }
     }
+    prevWorking = nowWorking
 
-    // de-dupe (an agent could be added twice by the two loops), newest first
-    const byId = new Map()
-    for (const r of roster) if (!byId.has(r.agentId)) byId.set(r.agentId, r)
-    // 16 = the realistic ceiling (a workflow fan-out caps at min(16, cores-2));
-    // the renderer auto-fits them, and overflow beyond this scrolls.
-    win.webContents.send('roster', [...byId.values()].slice(0, 16))
+    // de-dupe, newest first; cap at 16 (the workflow fan-out ceiling), renderer auto-fits
+    const out = new Map()
+    for (const r of roster) if (!out.has(r.agentId)) out.set(r.agentId, r)
+    win.webContents.send('roster', [...out.values()].slice(0, 16))
   }
 
   const timer = setInterval(tick, 1400)
