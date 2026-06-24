@@ -44,21 +44,27 @@ It scans `~/.claude/projects/**/subagents/agent-*.jsonl` (Claude Code's own tran
 
 ### Auto-launch on background agents
 
-The whole point of the Kennel is that you don't open it — it appears when agents start. That's a Claude Code **`PostToolUse` hook** on the `Agent` tool. Add this to `~/.claude/settings.json` — **identical on Windows, macOS, and Linux**:
+The whole point of the Kennel is that you don't open it — it appears when agents start. That's a Claude Code **`PostToolUse` hook** on the `Agent` tool. **Merge** this entry into the `hooks.PostToolUse` array in `~/.claude/settings.json` (don't overwrite hooks you already have) — it's **identical on Windows, macOS, and Linux**:
 
 ```json
 {
   "hooks": {
     "PostToolUse": [
       { "matcher": "Agent", "hooks": [
-        { "type": "command", "command": "node \"<path-to>/poodlepack/viz/monitor-window.mjs\" hook" }
+        { "type": "command", "command": "node \"<absolute-path-to>/poodlepack/viz/monitor-window.mjs\" hook", "timeout": 10 }
       ] }
     ]
   }
 }
 ```
 
-The `hook` subcommand reads the tool payload and opens the Kennel only for **background** agents. It's idempotent (a lockfile prevents a second window) and always exits cleanly, so it never blocks Claude Code.
+Use the **absolute** path to your clone, and keep it **double-quoted** — required if the path contains spaces (e.g. a cloud-synced folder like `Proton Drive/My files/...`). The `hook` subcommand reads the tool payload on stdin and opens the Kennel only for **background** agents (`run_in_background: true`). It's idempotent (a lockfile prevents a second window) and always exits cleanly, so it never blocks Claude Code.
+
+**Verify it** — this should print `opening kennel` and pop the window:
+
+```bash
+echo '{"tool_input":{"run_in_background":true}}' | node "<absolute-path-to>/poodlepack/viz/monitor-window.mjs" hook
+```
 
 ---
 
