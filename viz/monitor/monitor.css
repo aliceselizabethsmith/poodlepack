@@ -79,14 +79,15 @@
   gap: 8px;
 }
 
-/* idle mood — centered in the stage */
-body.idle #stage::after {
+/* idle mood — centered on the whole window (not just the stage) */
+body.idle #scene::after {
   content: "💤 the pack is napping — no background agents running";
   position: absolute;
   left: 0; right: 0; top: 50%;
   transform: translateY(-50%);
   text-align: center;
   font-size: 16px; color: rgba(91, 70, 54, .55);
+  pointer-events: none; z-index: 3;
 }
 
 /* click-a-poodle summary popup */
