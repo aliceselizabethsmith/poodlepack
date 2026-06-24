@@ -54,7 +54,7 @@ function createWindow() {
     height: 720,
     minWidth: 760,
     minHeight: 560,
-    title: 'Dev Crew 🌺',
+    title: 'PoodlePack 🌺',
     backgroundColor: '#ffd9a0',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
