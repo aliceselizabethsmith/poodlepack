@@ -229,16 +229,25 @@ window.kennel.onRoster((roster) => {
 // scale every card down by a uniform factor until the whole kennel fits without
 // scrolling — so no poodle is ever cut off, whatever the count or window size
 function fitStage() {
+  // Measure with the pack top-aligned. Our on-sand anchor (align-content:flex-end) pushes
+  // any overflow up and out of view, where flexbox excludes it from scrollHeight — so it
+  // reads == clientHeight and we'd never scale. Top-align only while measuring.
+  stage.style.alignContent = 'flex-start'
   stage.style.setProperty('--cs', '1')
-  if (stage.scrollHeight <= stage.clientHeight + 1) return // fits at full size
-  let lo = 0.4, hi = 1
-  for (let i = 0; i < 8; i++) {
-    const mid = (lo + hi) / 2
-    stage.style.setProperty('--cs', String(mid))
-    if (stage.scrollHeight <= stage.clientHeight + 1) lo = mid
-    else hi = mid
+  const sh1 = stage.scrollHeight, ch = stage.clientHeight
+  let cs = 1
+  if (sh1 > ch + 1) {
+    let lo = 0.3, hi = 1
+    for (let i = 0; i < 9; i++) {
+      const mid = (lo + hi) / 2
+      stage.style.setProperty('--cs', String(mid))
+      if (stage.scrollHeight <= ch + 1) lo = mid
+      else hi = mid
+    }
+    cs = lo
+    stage.style.setProperty('--cs', String(cs))
   }
-  stage.style.setProperty('--cs', String(lo))
+  stage.style.alignContent = '' // restore the CSS sand anchor (flex-end)
 }
 window.addEventListener('resize', fitStage)
 

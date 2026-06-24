@@ -110,7 +110,46 @@ const DEMO_DEFS_DETAILED = [
     done: 'All 22 tests pass; 94% line coverage on the new endpoints.' },
 ]
 
+// DEVCREW_DEMO=stress : the maximum 16 agents on screen at once (the roster cap), to
+// verify the renderer's fitStage() auto-scales the whole pack to stay visible. Realistic
+// per-role tasks + actions so it reads like a real busy kennel, not filler.
+const STRESS_DEFS = [
+  { kind: 'architect',  task: 'Design the billing service schema',     actions: ['sketching the table layout', 'mapping invoice → line-item relations', 'writing the migration plan'] },
+  { kind: 'coder',      task: 'Build the CSV-to-Markdown CLI',         actions: ['writing table.py', 'computing per-column widths', 'running pytest -q'] },
+  { kind: 'reviewer',   task: 'Review the auth refactor PR',           actions: ['reading auth/session.py', 'flagging a missing CSRF check', 'leaving inline comments'] },
+  { kind: 'tester',     task: 'Write the REST API integration suite',  actions: ['spinning up fixtures', 'covering the 401 / 404 paths', 'running under coverage'] },
+  { kind: 'security',   task: 'Audit the login module',                actions: ['running bandit -r', 'checking for SQL injection', 'grepping for hard-coded secrets'] },
+  { kind: 'scribe',     task: 'Write the README + API docs',           actions: ['drafting the quickstart', 'documenting each endpoint', 'adding usage examples'] },
+  { kind: 'researcher', task: 'Find a public-domain Hawaiian track',   actions: ['searching archive.org', 'checking the rights pages', 'drafting findings'] },
+  { kind: 'agent',      task: 'Triage the open bug backlog',           actions: ['reading the issue list', 'reproducing #482', 'tagging by severity'] },
+  { kind: 'architect',  task: 'Plan the cache layer',                  actions: ['comparing Redis vs in-memory', 'sizing the TTLs', 'drawing the invalidation flow'] },
+  { kind: 'coder',      task: 'Add pagination to the search endpoint', actions: ['writing the cursor logic', 'wiring limit / offset params', 'updating the OpenAPI spec'] },
+  { kind: 'reviewer',   task: 'Review the migration script',           actions: ['checking the down-migration', 'verifying the index changes', 'noting a risky DROP'] },
+  { kind: 'tester',     task: 'Add property tests for the parser',     actions: ['writing hypothesis strategies', 'shrinking a failing case', 'pinning the regression'] },
+  { kind: 'security',   task: 'Scan the dependencies',                 actions: ['running npm audit', 'triaging the high CVEs', 'proposing version bumps'] },
+  { kind: 'scribe',     task: 'Update the changelog',                  actions: ['collecting merged PRs', 'grouping by feature / fix', 'writing the release notes'] },
+  { kind: 'researcher', task: 'Compare charting libraries',            actions: ['benchmarking render times', 'checking license terms', 'tabulating the tradeoffs'] },
+  { kind: 'agent',      task: 'Clean up dead code',                    actions: ['finding unused exports', 'removing the legacy shim', 'running the build to confirm'] },
+]
+function startStress() {
+  const defs = STRESS_DEFS.map((d, i) => ({ id: `stress-${i}`, ...d }))
+  let t = 0
+  const tick = () => {
+    if (!win || win.isDestroyed()) return
+    const roster = defs.map((d, i) => ({
+      agentId: d.id, kind: d.kind, task: d.task,
+      action: d.actions[(Math.floor(t / 2) + i) % d.actions.length], state: 'working',
+    }))
+    win.webContents.send('roster', roster)
+    t++
+  }
+  const timer = setInterval(tick, 1000)
+  tick()
+  win.on('closed', () => clearInterval(timer))
+}
+
 function startDemo() {
+  if (process.env.DEVCREW_DEMO === 'stress') return startStress()
   const defs = process.env.DEVCREW_DEMO === 'detailed' ? DEMO_DEFS_DETAILED : DEMO_DEFS_SHORT
   let t = 0
   const tick = () => {
