@@ -335,7 +335,7 @@ function renderNextQuestion() {
 
 /* ── wire the event streams from main ─────────────────────────────────────── */
 window.devcrew.onManifest((m) => {
-  if (m.spec) setTaskLine(taskEl, 'Task', m.spec)
+  if (m.spec) setTaskLine(taskEl, 'Working on', m.spec)
   const cast = Array.isArray(m.cast) ? m.cast : []
   // unknown roles (indexOf -1) sort last, not first
   cast.slice().sort((a, b) => (ROLE_ORDER.indexOf(a.role) + 1 || 99) - (ROLE_ORDER.indexOf(b.role) + 1 || 99))

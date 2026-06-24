@@ -9,13 +9,23 @@ const tickerEl = document.getElementById('ticker-text')
 const fxLayer = document.getElementById('fx')
 const muteBtn = document.getElementById('mute')
 
-/* the persistent task line under the header — shows the featured agent's task.
-   Clears to empty (hidden via .taskline:empty) when the kennel is idle. */
-function setTaskLine(label, text) {
+/* dark or light ink, whichever reads better on the given chip color */
+function readableInk(hex) {
+  const c = String(hex || '').replace('#', '')
+  if (c.length < 6) return '#fff'
+  const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16)
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62 ? '#5b4636' : '#fff'
+}
+
+/* the persistent task line under the header — shows the featured agent's task, with the
+   label chip tinted to that agent's flower color. Clears to empty (hidden via
+   .taskline:empty) when the kennel is idle. */
+function setTaskLine(label, text, color) {
   if (!taskEl) return
   taskEl.textContent = ''
   if (!text) return
   const lbl = document.createElement('span'); lbl.className = 'tl-label'; lbl.textContent = label
+  if (color) { lbl.style.background = color; lbl.style.color = readableInk(color) }
   const txt = document.createElement('span'); txt.className = 'tl-text'; txt.textContent = text
   taskEl.append(lbl, txt)
 }
@@ -211,7 +221,7 @@ window.kennel.onRoster((roster) => {
     : (live.size ? 'wrapping up…' : '')
   const latest = roster[0]
   tickerEl.textContent = latest ? `🌺 ${latest.kind} · ${latest.action}` : '🐩 watching for background agents…'
-  setTaskLine(latest ? latest.kind : '', latest ? latest.task : '')
+  setTaskLine(latest ? latest.kind : '', latest ? latest.task : '', latest ? styleFor(latest.kind).flower : '')
   document.body.classList.toggle('idle', live.size === 0)
   fitStage()
 })
