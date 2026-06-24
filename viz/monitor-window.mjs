@@ -3,6 +3,7 @@
 //
 //   node viz/monitor-window.mjs ensure   # open it only if it isn't already open
 //   node viz/monitor-window.mjs start    # force-open a new one
+//   node viz/monitor-window.mjs demo     # force-open a scripted demo loop (no Claude Code needed)
 //   node viz/monitor-window.mjs stop     # close it
 //   node viz/monitor-window.mjs hook     # PostToolUse(Agent) hook entry — opens it for background agents
 //
@@ -32,9 +33,9 @@ function isRunning() {
   } catch { return false }
 }
 
-function launch() {
+function launch(extraEnv = {}) {
   // Strip ELECTRON_RUN_AS_NODE so a real window opens from inside an Electron host.
-  const env = { ...process.env }
+  const env = { ...process.env, ...extraEnv }
   delete env.ELECTRON_RUN_AS_NODE
   const electron = require('electron') // resolves to the platform's Electron binary (Win/mac/Linux)
   const child = spawn(electron, [MAIN], { env, detached: true, stdio: 'ignore', shell: false })
@@ -51,6 +52,10 @@ if (cmd === 'ensure') {
   ensure()
 } else if (cmd === 'start') {
   launch(); process.stdout.write('opening kennel\n')
+} else if (cmd === 'demo') {
+  const detailed = process.argv[3] === 'detailed'
+  launch({ DEVCREW_DEMO: detailed ? 'detailed' : '1' })
+  process.stdout.write(`opening kennel (${detailed ? 'detailed ' : ''}scripted demo loop)\n`)
 } else if (cmd === 'stop') {
   try {
     const pid = Number(fs.readFileSync(LOCK, 'utf8').trim())
@@ -71,6 +76,6 @@ if (cmd === 'ensure') {
   })
   setTimeout(() => process.exit(0), 2500) // never hang the host if stdin stays open
 } else {
-  process.stderr.write('usage: monitor-window.mjs <ensure|start|stop|hook>\n')
+  process.stderr.write('usage: monitor-window.mjs <ensure|start|demo|stop|hook>\n')
   process.exit(1)
 }

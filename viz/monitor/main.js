@@ -66,13 +66,49 @@ function createWindow() {
 // DEVCREW_DEMO=1 : a scripted loop so you can verify every state — agents start
 // staggered, work (rotating actions), finish one by one (each a celebration),
 // linger, then leave to an idle kennel, then repeat.
+// short, snappy actions — good for a quick header GIF
+const DEMO_DEFS_SHORT = [
+  { id: 'demo-coder',    kind: 'coder',      task: 'Build a CSV-to-Markdown CLI',      actions: ['reading the spec', 'writing parser.py', 'running pytest -q'], done: 'Done — 14 tests pass.' },
+  { id: 'demo-research', kind: 'researcher', task: 'Research Hawaiian music licensing', actions: ['searching the web', 'reading archive.org', 'drafting findings'],  done: 'Found 3 public-domain options.' },
+  { id: 'demo-security', kind: 'security',   task: 'Audit the auth module',            actions: ['running bandit', 'reading db.py', 'checking for injection'],   done: 'bandit: 0 findings — clean.' },
+  { id: 'demo-tester',   kind: 'tester',     task: 'Write tests for the API',          actions: ['writing test_api.py', 'running the suite'],                   done: 'All 22 tests pass.' },
+]
+
+// verbose, realistic actions — closer to real agent output, and it exercises the
+// two-line bubbles + hover-for-full. Used by `monitor-window.mjs demo detailed`.
+const DEMO_DEFS_DETAILED = [
+  { id: 'demo-coder', kind: 'coder', task: 'Build a CSV-to-Markdown CLI with column alignment',
+    actions: [
+      'Sketching the module layout: cli.py (argparse front end), table.py (width + alignment), io.py (read/write + stdin)',
+      'Writing table.py — computing per-column max width, padding cells, and emitting the :---: alignment separator row',
+      'Running pytest -q: 18 tests across parsing, ragged rows, unicode-width cells, and empty-input edge cases',
+    ],
+    done: 'Done — 18 tests pass; handles ragged rows, unicode-width cells, and stdin piping.' },
+  { id: 'demo-research', kind: 'researcher', task: 'Find a public-domain Hawaiian track for the soundtrack',
+    actions: [
+      'Searching archive.org and Musopen for pre-1925 recordings of "Aloha ʻOe" in the public domain',
+      'Reading the rights pages — confirming the 1878 composition is PD and the specific transfer is CC0',
+      'Drafting findings: three candidate sources with license notes, run-times, and direct download links',
+    ],
+    done: 'Found 3 public-domain recordings; recommending the cleanest transfer (CC0, ~3.5 min).' },
+  { id: 'demo-security', kind: 'security', task: 'Audit the auth module for injection + secret leaks',
+    actions: [
+      'Running bandit -r on the auth package and triaging each medium/high finding by hand',
+      'Reading db.py — verifying the login query uses parameter binding instead of string interpolation',
+      'Grepping for hard-coded tokens and confirming every secret loads from the environment',
+    ],
+    done: 'bandit: 0 high/medium findings; login query is parameterized; no secrets in source.' },
+  { id: 'demo-tester', kind: 'tester', task: 'Write an integration test suite for the REST API',
+    actions: [
+      'Writing test_api.py — fixtures spin up the app, seed a temp database, and tear it down between cases',
+      'Covering the happy path plus the 401 / 404 / 422 error contracts and the pagination boundaries',
+      'Running the suite under coverage to confirm the new endpoints are actually exercised',
+    ],
+    done: 'All 22 tests pass; 94% line coverage on the new endpoints.' },
+]
+
 function startDemo() {
-  const defs = [
-    { id: 'demo-coder',    kind: 'coder',      task: 'Build a CSV-to-Markdown CLI',     actions: ['reading the spec', 'writing parser.py', 'running pytest -q'], done: 'Done — 14 tests pass.' },
-    { id: 'demo-research', kind: 'researcher',  task: 'Research Hawaiian music licensing', actions: ['searching the web', 'reading archive.org', 'drafting findings'],  done: 'Found 3 public-domain options.' },
-    { id: 'demo-security', kind: 'security',   task: 'Audit the auth module',           actions: ['running bandit', 'reading db.py', 'checking for injection'],   done: 'bandit: 0 findings — clean.' },
-    { id: 'demo-tester',   kind: 'tester',     task: 'Write tests for the API',         actions: ['writing test_api.py', 'running the suite'],                   done: 'All 22 tests pass.' },
-  ]
+  const defs = process.env.DEVCREW_DEMO === 'detailed' ? DEMO_DEFS_DETAILED : DEMO_DEFS_SHORT
   let t = 0
   const tick = () => {
     if (!win || win.isDestroyed()) return

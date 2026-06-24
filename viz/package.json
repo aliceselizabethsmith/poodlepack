@@ -5,7 +5,10 @@
   "description": "Kawaii Kauai visualizer for the PoodlePack build pipeline",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "demo:pipeline": "node demo.mjs",
+    "demo:tracker": "node monitor-window.mjs demo",
+    "demo:tracker:detailed": "node monitor-window.mjs demo detailed"
   },
   "devDependencies": {
     "electron": "^33.2.0"

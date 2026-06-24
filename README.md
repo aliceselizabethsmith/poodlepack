@@ -7,8 +7,9 @@ PoodlePack is a pair of little Electron windows that make Claude Code's multi-ag
 - **🐾 Watch (the Kennel)** — a live dashboard that auto-opens whenever you fire **background agents**, drawing one poodle per agent with what it's doing right now, a scrolling activity log, and a confetti celebration when each finishes. It reads Claude Code's own transcripts — nothing is sent anywhere.
 - **🏗️ Build (the Crew)** — a ChatDev-style pipeline where a crew of six named poodles take a one-line spec through **design → code → review → fix → test → security → docs**, animated live.
 
-<!-- TODO before publishing: add a looping GIF here (Watch mode in demo, ≤15s). -->
-<!-- ![PoodlePack](docs/poodlepack.gif) -->
+![PoodlePack — the Kennel watching live Claude Code agents](docs/poodlepack.gif)
+
+<sub>The Kennel, watching a pack work. (Asset list + capture tips in [`docs/`](docs/).)</sub>
 
 ---
 
@@ -20,11 +21,11 @@ cd poodlepack/viz
 npm install          # pulls Electron (git-ignored, so this is required once)
 ```
 
-Then try the **demo** — no Claude Code needed, it plays a scripted build/watch loop:
+Then try a **demo** — no Claude Code needed, each plays a scripted loop (run from `viz/`):
 
 ```bash
-node demo.mjs                              # the Build crew, scripted end-to-end
-DEVCREW_DEMO=1 node monitor-window.mjs start   # the Watch kennel, scripted agents
+npm run demo:pipeline    # the Poodle Pipeline (Build crew), scripted end-to-end
+npm run demo:tracker     # the Poodle agent tracker (Watch kennel), scripted agents
 ```
 
 ---
@@ -38,6 +39,8 @@ node viz/monitor-window.mjs start    # from the repo root
 ```
 
 It scans `~/.claude/projects/**/subagents/agent-*.jsonl` (Claude Code's own transcripts) and renders a live poodle per active agent — current action in a speech bubble, a scrolling chat log, dust kicked up while working, a confetti burst on finish, and a sleepy beach when the kennel's idle. It auto-fits up to 16 agents.
+
+![The Kennel — a pack of background agents at work](docs/watch.png)
 
 ### Auto-launch on background agents
 
@@ -77,6 +80,8 @@ A crew of poodles hands the work down the line, each phase producing a concrete 
 | Tester | **Ruby** 🌺 (red) | Test → writes + runs tests, bounded fix loop |
 | Security | **Lucy** 🦉 (grey) | Security → `bandit` / `npm audit` + AI review |
 | Scribe | **Pearl** 🌙 (cream) | Docs → `README.md` |
+
+![The Build crew mid-pipeline — speech bubbles and a handoff token](docs/build.png)
 
 Built apps land in `projects/<name>/`. To launch it **with the live window** from any workspace, install the global `/poodlepack` skill (see `~/.claude/skills/poodlepack/`).
 
