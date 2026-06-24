@@ -7,7 +7,7 @@
 //
 // (We route through the OS rather than the renderer's <audio>/Web Audio because
 // Chromium's audio path is silent on some Windows setups.)
-const { spawn, execFile } = require('child_process')
+const { spawn, execSync } = require('child_process')
 
 const IS_WIN = process.platform === 'win32'
 const FFPLAY = ['-nodisp', '-autoexit', '-loglevel', 'quiet']
@@ -30,8 +30,9 @@ function startMusic(file, volume = 40) {
 
 function stopMusic() {
   if (musicProc) { try { musicProc.kill() } catch {} musicProc = null }
-  // shell:true can leave the real ffplay.exe orphaned on Windows — make sure it's gone.
-  if (IS_WIN) { try { execFile('taskkill', ['/F', '/IM', 'ffplay.exe']) } catch {} }
+  // shell:true can leave the real ffplay.exe orphaned on Windows. Kill it synchronously
+  // so it's gone before the app quits on window close (an async kill can lose the race).
+  if (IS_WIN) { try { execSync('taskkill /F /IM ffplay.exe', { stdio: 'ignore' }) } catch {} }
 }
 
 function isMusicPlaying() { return !!musicProc }
