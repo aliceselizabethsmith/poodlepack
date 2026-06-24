@@ -4,7 +4,7 @@
 /* the kennel: a wrapping grid of small agent cards, scrolls if it overflows */
 #stage {
   position: absolute;
-  left: 1.5%; right: 26.5%; top: 56px; bottom: 60px;   /* bottom clears the task line */
+  left: 1.5%; right: 26.5%; top: 56px; bottom: 70px;   /* bottom clears the task line */
   height: auto;            /* override style.css's height:60% so top+bottom = full height */
   display: flex; flex-wrap: wrap;
   /* anchor the pack to the bottom so they stand on the sand — with one or two agents
@@ -68,7 +68,7 @@
 
 /* scrolling chat history (reuses #chatlog from style.css; make it taller here) */
 #chatlog {
-  top: 56px; right: 1.5%; bottom: 60px;
+  top: 56px; right: 1.5%; bottom: 70px;
   width: 24%; max-width: 400px;
   max-height: none;
   gap: 8px;

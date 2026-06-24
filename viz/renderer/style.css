@@ -108,7 +108,7 @@ body {
    the header stays uncrowded. Build window: the original spec. Watch window: the featured
    agent's task. Hidden automatically whenever it's empty (idle / no task yet). */
 .taskline {
-  position: absolute; bottom: 30px; left: 16px; right: 30%;
+  position: absolute; bottom: 40px; left: 16px; right: auto; max-width: 62%;
   z-index: 6;
   display: flex; align-items: center; gap: 8px;
   font-size: 13px; color: #6b4f3a;
