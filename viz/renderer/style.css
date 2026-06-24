@@ -88,6 +88,7 @@ body {
 }
 .title .lei { font-size: 22px; }
 .title .kauai { color: #fff3c4; }
+.title .dash { color: #ff6f91; }
 .spec {
   flex: 1;
   font-size: 14px; color: #6b4f3a;

@@ -8,6 +8,28 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const fsp = require('fs/promises')
+const { spawn, exec } = require('child_process')
+
+// Music + finale sound via the OS (Electron's own audio path is unreliable on some
+// Windows setups). ffplay loops the gentle Hawaiian track; PowerShell plays tada.wav.
+const MUSIC_FILE = path.join(__dirname, 'assets', 'music', 'aloha-oe-loud.mp3')
+let musicProc = null
+function startMusic() {
+  if (musicProc) return
+  try {
+    musicProc = spawn('ffplay', ['-nodisp', '-autoexit', '-loglevel', 'quiet', '-loop', '0', '-volume', '40', MUSIC_FILE],
+      { stdio: 'ignore', shell: true })
+    musicProc.on('exit', () => { musicProc = null })
+    musicProc.on('error', () => { musicProc = null })
+  } catch { musicProc = null }
+}
+function stopMusic() {
+  if (musicProc) { try { musicProc.kill() } catch {} musicProc = null }
+  try { exec('taskkill /F /IM ffplay.exe') } catch {}
+}
+function playChime() {
+  exec(`powershell -NoProfile -Command "(New-Object Media.SoundPlayer 'C:\\Windows\\Media\\tada.wav').PlaySync()"`)
+}
 
 // Resolve the run folder from --run-dir <path> or DEVCREW_RUN_DIR, relative to CWD.
 function resolveRunDir() {
@@ -32,7 +54,7 @@ function createWindow() {
     height: 720,
     minWidth: 760,
     minHeight: 560,
-    title: 'Dev Crew 🌺',
+    title: 'PoodlePack 🌺',
     backgroundColor: '#ffd9a0',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -42,7 +64,8 @@ function createWindow() {
   })
   win.removeMenu()
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'))
-  win.webContents.once('did-finish-load', () => startWatching())
+  win.webContents.once('did-finish-load', () => { startMusic(); startWatching() })
+  win.on('closed', stopMusic)
 }
 
 async function readJson(file) {
@@ -111,6 +134,7 @@ function startWatching() {
     if (status && status.state && status.state !== lastStatus) {
       lastStatus = status.state
       win.webContents.send('status', status)
+      if (status.state === 'done') playChime() // celebratory tada on ship
     }
   }
 
@@ -133,8 +157,10 @@ ipcMain.handle('answer', async (_e, payload) => {
   return true
 })
 
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 app.whenReady().then(createWindow)
-app.on('window-all-closed', () => app.quit())
+app.on('window-all-closed', () => { stopMusic(); app.quit() })
+app.on('before-quit', stopMusic)
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow()
 })

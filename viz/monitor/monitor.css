@@ -1,0 +1,117 @@
+/* dashboard layout: a grid of small poodle "cards" on the left, a scrolling
+   chat-history panel on the right. Layered on ../renderer/style.css. */
+
+.kennel-label { color: #fff3c4; }
+.title .dash { color: #ff6f91; }
+
+.mutebtn {
+  border: 0; cursor: pointer;
+  background: rgba(255, 255, 255, .72);
+  font-size: 16px; line-height: 1;
+  padding: 6px 10px; border-radius: 999px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .08);
+}
+.mutebtn:active { transform: translateY(1px); }
+
+/* the kennel: a wrapping grid of small agent cards, scrolls if it overflows */
+#stage {
+  position: absolute;
+  left: 1.5%; right: 26.5%; top: 56px; bottom: 30px;
+  height: auto;            /* override style.css's height:60% so top+bottom = full height */
+  display: flex; flex-wrap: wrap;
+  align-content: space-evenly; justify-content: space-evenly;
+  gap: 8px;
+  padding: 8px 6px;
+  overflow-y: auto;
+}
+
+/* one agent = bubble on top, poodle, nameplate — stacked, never overlapping */
+.agent-card {
+  width: 190px;
+  display: flex; flex-direction: column; align-items: center;
+  flex: 0 0 auto;
+  zoom: var(--cs, 1); /* uniform fit-to-window scale set by fitStage() */
+}
+.agent-card .poodle { animation: bob 3.4s ease-in-out infinite; }
+.agent-card .pup { width: 94px; height: 112px; }
+.agent-card .ring { width: 78px; margin-left: -39px; bottom: 16px; }
+/* flower anchored to the pup now, tucked on the right side of the head */
+.agent-card .pup { position: relative; }
+.agent-card .accessory { right: 15px; top: 22px; }
+.agent-card .accessory svg { width: 22px; height: 22px; }
+.agent-card .nameplate { margin-top: 14px; font-size: 12px; padding: 3px 10px; max-width: 196px; }
+.agent-card .nameplate .role { font-size: 10px; }
+.agent-card .nameplate .pname { text-transform: capitalize; }
+
+/* the per-agent action bubble (in-flow, above its poodle) */
+.cardbubble {
+  max-width: 190px; min-height: 14px;
+  background: rgba(255, 253, 247, .38);   /* more transparent, frosted */
+  backdrop-filter: blur(3px);
+  border: 2px solid rgba(255, 227, 239, .7); border-radius: 13px;
+  padding: 6px 11px; margin-bottom: 3px;
+  font-size: 12px; line-height: 1.3; color: var(--ink);
+  text-align: center;
+  overflow-wrap: anywhere; word-break: break-word;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+  position: relative;
+}
+.cardbubble::after {
+  content: ""; position: absolute; bottom: -7px; left: 26px;
+  border-width: 7px 6px 0 6px; border-style: solid;
+  border-color: rgba(255, 253, 247, .38) transparent transparent transparent;
+}
+/* show the action in full if it fits in 2 lines; clamp + hover-for-full if longer */
+.cardbubble .bubbletext {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cardbubble[title] { cursor: default; }
+.cardbubble.pulse { animation: cardpulse .5s ease; }
+/* chat-history entries keep their original shape; hover (title attr) shows full text */
+@keyframes cardpulse { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+
+/* scrolling chat history (reuses #chatlog from style.css; make it taller here) */
+#chatlog {
+  top: 56px; right: 1.5%; bottom: 30px;
+  width: 24%; max-width: 400px;
+  max-height: none;
+  gap: 8px;
+}
+
+/* idle mood — centered on the whole window (not just the stage) */
+body.idle #scene::after {
+  content: "💤 the pack is napping — no background agents running";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 16px; color: rgba(91, 70, 54, .55);
+  pointer-events: none; z-index: 3;
+}
+
+/* click-a-poodle summary popup */
+#summarypop {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%) scale(.92);
+  width: min(380px, 72%);
+  background: rgba(255, 253, 247, .97);
+  border: 2px solid #ffe3ef; border-radius: 18px;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, .3);
+  padding: 16px 18px; z-index: 50; color: var(--ink);
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+#summarypop.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+#summarypop .sp-close {
+  position: absolute; top: 6px; right: 12px; border: 0; background: none;
+  font-size: 22px; line-height: 1; cursor: pointer; color: #c06591;
+}
+#summarypop .sp-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+#summarypop .sp-flower, #summarypop .sp-flower svg { width: 26px; height: 26px; }
+#summarypop .sp-kind { font-weight: 800; font-size: 17px; text-transform: capitalize; }
+#summarypop .sp-state { margin-left: auto; font-size: 12px; color: #9a8674; }
+#summarypop .sp-row { display: flex; gap: 8px; margin: 6px 0; font-size: 13px; line-height: 1.35; }
+#summarypop .sp-label { font-weight: 700; min-width: 38px; color: #9a8674; }
+#summarypop .sp-val { flex: 1; overflow-wrap: anywhere; }
+#summarypop .sp-meta { margin-top: 10px; font-size: 11.5px; color: #9a8674; }

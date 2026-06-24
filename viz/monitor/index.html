@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; media-src 'self' file: data: blob:;" />
+  <title>PoodlePack 🐩</title>
+  <link rel="stylesheet" href="../renderer/style.css" />
+  <link rel="stylesheet" href="monitor.css" />
+</head>
+<body>
+  <div id="scene">
+    <div class="sun"></div>
+    <div class="cloud cloud-a">☁️</div>
+    <div class="cloud cloud-b">☁️</div>
+    <div class="ocean"></div>
+    <div class="palm palm-left">🌴</div>
+    <div class="palm palm-right">🌴</div>
+
+    <header id="hud">
+      <div class="title">Poodle<span class="dash">Pack</span> <span class="lei">🌺</span></div>
+      <div id="summary" class="spec">the kennel is quiet — no background agents running</div>
+      <button id="mute" class="mutebtn" title="mute music">🔊</button>
+    </header>
+
+    <div id="stage"></div>
+    <div id="chatlog"></div>
+    <div id="fx"></div>
+
+    <footer id="ticker"><span id="ticker-text">🐩 watching for background agents…</span></footer>
+
+  </div>
+
+  <script src="monitor.js"></script>
+</body>
+</html>
