@@ -4,9 +4,21 @@
 const stage = document.getElementById('stage')
 const chatlog = document.getElementById('chatlog')
 const summaryEl = document.getElementById('summary')
+const taskEl = document.getElementById('taskline')
 const tickerEl = document.getElementById('ticker-text')
 const fxLayer = document.getElementById('fx')
 const muteBtn = document.getElementById('mute')
+
+/* the persistent task line under the header — shows the featured agent's task.
+   Clears to empty (hidden via .taskline:empty) when the kennel is idle. */
+function setTaskLine(label, text) {
+  if (!taskEl) return
+  taskEl.textContent = ''
+  if (!text) return
+  const lbl = document.createElement('span'); lbl.className = 'tl-label'; lbl.textContent = label
+  const txt = document.createElement('span'); txt.className = 'tl-text'; txt.textContent = text
+  taskEl.append(lbl, txt)
+}
 
 // agent kind -> poodle look (mirrors the build cast where it overlaps)
 const KIND_STYLE = {
@@ -199,6 +211,7 @@ window.kennel.onRoster((roster) => {
     : (live.size ? 'wrapping up…' : '')
   const latest = roster[0]
   tickerEl.textContent = latest ? `🌺 ${latest.kind} · ${latest.action}` : '🐩 watching for background agents…'
+  setTaskLine(latest ? latest.kind : '', latest ? latest.task : '')
   document.body.classList.toggle('idle', live.size === 0)
   fitStage()
 })

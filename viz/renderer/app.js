@@ -20,7 +20,19 @@ const FALLBACK_STYLE = { color: '#ffb3c6', size: 1.0, flower: '#ff8fb0', label: 
 const stage = document.getElementById('stage')
 const phaseBadge = document.getElementById('phase')
 const specEl = document.getElementById('spec')
+const taskEl = document.getElementById('taskline')
 const tickerEl = document.getElementById('ticker-text')
+
+/* the persistent "what we're working on" line under the header. Clears to empty (hidden
+   via .taskline:empty) when there's no task. */
+function setTaskLine(el, label, text) {
+  if (!el) return
+  el.textContent = ''
+  if (!text) return
+  const lbl = document.createElement('span'); lbl.className = 'tl-label'; lbl.textContent = label
+  const txt = document.createElement('span'); txt.className = 'tl-text'; txt.textContent = text
+  el.append(lbl, txt)
+}
 const fxLayer = document.getElementById('fx')
 const chatlog = document.getElementById('chatlog')
 const qmodal = document.getElementById('qmodal')
@@ -323,7 +335,7 @@ function renderNextQuestion() {
 
 /* ── wire the event streams from main ─────────────────────────────────────── */
 window.devcrew.onManifest((m) => {
-  if (m.spec) specEl.textContent = m.spec
+  if (m.spec) setTaskLine(taskEl, 'Task', m.spec)
   const cast = Array.isArray(m.cast) ? m.cast : []
   // unknown roles (indexOf -1) sort last, not first
   cast.slice().sort((a, b) => (ROLE_ORDER.indexOf(a.role) + 1 || 99) - (ROLE_ORDER.indexOf(b.role) + 1 || 99))
