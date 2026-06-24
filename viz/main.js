@@ -41,6 +41,7 @@ function createWindow() {
     minWidth: 760,
     minHeight: 560,
     title: 'PoodlePack 🌺',
+    icon: path.join(__dirname, 'assets', 'icon.ico'),
     backgroundColor: '#ffd9a0',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -150,6 +151,7 @@ ipcMain.handle('music', (_e, on) => {
   return audio.isMusicPlaying()
 })
 
+app.setAppUserModelId('com.poodlepack') // so Windows uses our taskbar icon, not electron.exe
 app.whenReady().then(() => { audio.sweepOrphans(); createWindow() }).catch((err) => {
   console.error('PoodlePack failed to start:', err); app.quit()
 })

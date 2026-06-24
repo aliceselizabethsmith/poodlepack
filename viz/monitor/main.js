@@ -49,6 +49,7 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1040, height: 620, minWidth: 720, minHeight: 460,
     title: 'PoodlePack 🐩',
+    icon: path.join(__dirname, '..', 'assets', 'icon.ico'),
     backgroundColor: '#ffd9a0',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -195,6 +196,7 @@ function startPolling() {
   win.on('closed', () => { clearInterval(timer); if (idleCloseTimer) clearTimeout(idleCloseTimer) })
 }
 
+app.setAppUserModelId('com.poodlepack') // so Windows uses our taskbar icon, not electron.exe
 app.whenReady().then(async () => { audio.sweepOrphans(); await loadScanner(); writeLock(); createWindow() })
   .catch((err) => { console.error('PoodlePack kennel failed to start:', err); app.quit() })
 app.on('window-all-closed', () => { audio.stopMusic(); clearLock(); app.quit() })
