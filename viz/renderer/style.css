@@ -168,7 +168,7 @@ body {
 
 /* ── stage: the poodle pack ───────────────────────────────────────────────── */
 #stage {
-  position: absolute; left: 0; right: 0; bottom: 10%;
+  position: absolute; left: 0; right: 0; bottom: 14%;
   height: 60%;
   display: flex; align-items: flex-end; justify-content: center;
   gap: clamp(6px, 2.2vw, 34px);
@@ -277,7 +277,7 @@ body {
 }
 
 /* ── ticker ───────────────────────────────────────────────────────────────── */
-.pawpoodle { width: auto; height: 22px; vertical-align: -6px; margin-right: 5px; }
+.tickerflower { width: 18px; height: 18px; vertical-align: -4px; margin-right: 5px; }
 
 #ticker {
   position: absolute; bottom: 0; left: 0; right: 0;
