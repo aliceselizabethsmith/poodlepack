@@ -8,17 +8,16 @@ const fs = require('fs')
 
 const ASSETS = path.join(__dirname, '..', 'assets')
 
-// The poodle EMOJI on a soft Kauai disc — simple, high-contrast, and legible even at
-// 16px (the hand-drawn poodle muddied into a blob at title-bar size).
+// The hibiscus flower EMOJI on a TRANSPARENT canvas — the app's mark, vivid and legible
+// even at 16px. Sized to fit the whole flower with margin so nothing is clipped.
 const HTML = `<!doctype html><html><head><meta charset="utf-8"><style>
-  html,body{margin:0;width:256px;height:256px;overflow:hidden}
+  html,body{margin:0;width:256px;height:256px;overflow:hidden;background:transparent}
   .bg{width:256px;height:256px;display:flex;align-items:center;justify-content:center;
-      background:radial-gradient(circle at 50% 38%, #ffe9c6 0%, #ffc6d2 62%, #f5b6cf 100%);
       font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;
-      font-size:190px;line-height:1}
-  .pup{filter:drop-shadow(0 6px 6px rgba(0,0,0,.18));transform:translateY(4px)}
+      font-size:172px;line-height:1}
+  .pup{filter:drop-shadow(0 4px 5px rgba(0,0,0,.22))}
 </style></head><body>
-  <div class="bg"><span class="pup">🐩</span></div>
+  <div class="bg"><span class="pup">🌺</span></div>
 </body></html>`
 
 // Pack several PNG sizes into a Vista+ .ico (each entry is a PNG payload).
@@ -44,7 +43,7 @@ function buildIco(entriesIn) {
 }
 
 app.whenReady().then(async () => {
-  const win = new BrowserWindow({ width: 256, height: 256, show: false, webPreferences: {} })
+  const win = new BrowserWindow({ width: 256, height: 256, show: false, frame: false, transparent: true, backgroundColor: '#00000000', webPreferences: {} })
   await win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(HTML))
   await new Promise((r) => setTimeout(r, 400)) // let it paint
   const img = await win.webContents.capturePage()
