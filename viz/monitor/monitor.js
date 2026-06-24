@@ -73,6 +73,9 @@ function makeCard(a) {
   card.className = 'agent-card'
   const bubble = document.createElement('div')
   bubble.className = 'cardbubble'
+  const btext = document.createElement('span')
+  btext.className = 'bubbletext'
+  bubble.appendChild(btext)
   const poodle = document.createElement('div')
   poodle.className = 'poodle'
   poodle.innerHTML = `
@@ -83,19 +86,19 @@ function makeCard(a) {
   card.appendChild(bubble)
   card.appendChild(poodle)
   stage.appendChild(card)
-  return { el: card, poodleEl: poodle, bubbleEl: bubble, kind: a.kind, action: null, state: null }
+  return { el: card, poodleEl: poodle, bubbleEl: bubble, bubbleTextEl: btext, kind: a.kind, action: null, state: null }
 }
 
 function shortTask(task) {
-  // strip the build-crew persona preamble if present, keep it terse
-  return String(task || '').replace(/^You are \w+[^,]*,?\s*/i, '').slice(0, 26)
+  return String(task || '').slice(0, 30) // task is already cleaned in the scanner
 }
 
 // returns true if the action text changed
 function setBubble(rec, text) {
   if (rec.action === text) return false
   rec.action = text
-  rec.bubbleEl.textContent = text
+  rec.bubbleTextEl.textContent = text
+  rec.bubbleEl.title = text // hover shows the full text when clamped
   rec.bubbleEl.classList.remove('pulse'); void rec.bubbleEl.offsetWidth; rec.bubbleEl.classList.add('pulse')
   return true
 }
@@ -107,6 +110,7 @@ function addLog(a) {
   const msg = document.createElement('div')
   msg.className = 'logmsg'
   msg.style.setProperty('--c', s.flower)
+  msg.title = `${a.kind} — ${a.action}` // hover shows the full entry
   const who = document.createElement('span')
   who.className = 'who'; who.style.color = s.flower; who.textContent = a.kind
   msg.appendChild(who)

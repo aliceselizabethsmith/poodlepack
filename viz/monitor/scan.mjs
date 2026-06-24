@@ -38,19 +38,27 @@ function readLines(file) {
 
 function parse(line) { try { return JSON.parse(line) } catch { return null } }
 
-// the agent's assignment, from the first user message
-function taskOf(lines) {
+// the full first user message — the agent's assignment (used for kind classification)
+function firstUserText(lines) {
   for (const line of lines) {
     const e = parse(line)
     if (e && e.type === 'user' && e.message) {
       const c = e.message.content
-      const text = typeof c === 'string' ? c
-        : Array.isArray(c) ? c.map(b => (typeof b === 'string' ? b : b.text || '')).join(' ') : ''
-      const firstLine = text.split('\n').map(s => s.trim()).find(Boolean) || ''
-      return firstLine.slice(0, 90)
+      return (typeof c === 'string' ? c
+        : Array.isArray(c) ? c.map(b => (typeof b === 'string' ? b : b.text || '')).join(' ') : '')
+        .replace(/\s+/g, ' ').trim()
     }
   }
-  return 'working'
+  return ''
+}
+
+// a short, human task label — drop the crew persona preamble ("You are X, a Y …
+// building this project:") so the nameplate shows the real assignment, not boilerplate
+function cleanTask(full) {
+  let t = full.replace(/^You are .*?building this project:?\s*/i, '')
+  if (t === full) t = full.replace(/^You are [^.,:]*[.,:]\s*/i, '')
+  const m = t.match(/(?:Spec|Your job|Task)\s*:?\s*"?([^"\n]{4,90})/i)
+  return ((m ? m[1] : t).trim().slice(0, 80)) || 'working'
 }
 
 function baseName(p) { return p ? path.basename(String(p)) : '' }
@@ -83,7 +91,7 @@ function actionOf(lines) {
         if (b.type === 'tool_use') return toolPhrase(b.name, b.input)
         if (b.type === 'text' && b.text && b.text.trim()) {
           const t = b.text.trim().replace(/\s+/g, ' ')
-          return t.length > 64 ? `${t.slice(0, 64)}…` : t
+          return t.length > 220 ? `${t.slice(0, 220)}…` : t
         }
       }
       return 'thinking…'
@@ -96,16 +104,19 @@ function actionOf(lines) {
 // agent kind (for poodle styling) inferred from the task wording
 function kindOf(task) {
   const t = task.toLowerCase()
-  if (/\baudit|security|vulnerab|cve|injection\b/.test(t)) return 'security'
-  if (/\breview|critique|inspect\b/.test(t)) return 'reviewer'
-  if (/\btest|pytest|coverage\b/.test(t)) return 'tester'
-  if (/\bresearch|investigate|find out|docs?\b/.test(t)) return 'researcher'
-  if (/\bwrite|document|readme|summar/.test(t)) return 'scribe'
-  if (/\bimplement|build|code|refactor|fix\b/.test(t)) return 'coder'
+  if (/\b(audit|security|vulnerab|cve|injection)\b/.test(t)) return 'security'
+  if (/\b(review|critique|inspect)\b/.test(t)) return 'reviewer'
+  if (/\b(test|pytest|coverage)\b/.test(t)) return 'tester'
+  if (/\b(research|investigate|find out|docs?)\b/.test(t)) return 'researcher'
+  if (/\b(write|document|readme|summar)/.test(t)) return 'scribe'
+  if (/\b(implement|build|code|refactor|fix)\b/.test(t)) return 'coder'
   return 'agent'
 }
 
-export function scan({ activeMs = ACTIVE_MS } = {}) {
+// maxReadAgeMs: don't open/parse transcripts older than this — only fresh ones can
+// be in the dashboard roster, so skipping stale files avoids re-reading the whole
+// (50+ MB) corpus every poll tick.
+export function scan({ activeMs = ACTIVE_MS, maxReadAgeMs = Infinity } = {}) {
   const now = Date.now()
   const agents = []
   for (const proj of safeReaddir(PROJECTS_DIR)) {
@@ -118,9 +129,10 @@ export function scan({ activeMs = ACTIVE_MS } = {}) {
         let st
         try { st = fs.statSync(file) } catch { continue }
         const age = now - st.mtimeMs
+        if (age > maxReadAgeMs) continue // stale: stat only, never read the contents
         const lines = readLines(file)
         if (!lines.length) continue
-        const task = taskOf(lines)
+        const full = firstUserText(lines)
         agents.push({
           agentId: path.basename(file).replace(/^agent-|\.jsonl$/g, ''),
           project: proj.name,
@@ -130,8 +142,8 @@ export function scan({ activeMs = ACTIVE_MS } = {}) {
           ageMs: age,
           active: age < activeMs,
           isWorkflow: file.includes(`${path.sep}workflows${path.sep}`),
-          task,
-          kind: kindOf(task),
+          task: cleanTask(full),
+          kind: kindOf(full),
           action: actionOf(lines),
         })
       }
