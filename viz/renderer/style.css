@@ -117,8 +117,9 @@ body {
 #chatlog {
   position: absolute;
   top: 60px; right: 2%;
-  width: 24%; max-width: 340px;
-  max-height: 34%;
+  width: 25%; max-width: 420px;
+  bottom: 23%;            /* run the panel down the right column, stopping above the pack */
+  max-height: none;
   overflow-y: auto;
   overflow-x: hidden;       /* never show a horizontal scrollbar */
   display: flex; flex-direction: column; gap: 5px;

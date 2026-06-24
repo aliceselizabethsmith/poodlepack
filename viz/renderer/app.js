@@ -156,7 +156,8 @@ function speak(role, text, kind) {
   const size = (CAST_STYLE[role] || FALLBACK_STYLE).size
   b.style.bottom = `${Math.round(175 * size + 30)}px`
   c.el.appendChild(b)
-  setTimeout(() => { b.classList.add('fade'); setTimeout(() => b.remove(), 400) }, 4800)
+  // No auto-fade: the bubble stays over the working dog until the next one pops (same
+  // dog speaks again, above) or the work moves to another dog (cleared in spotlight()).
 }
 
 /* append a line to the scrolling conversation history (translucent, auto-scrolls) */
@@ -185,7 +186,11 @@ function addLog(role, persona, text, phase) {
 function spotlight(role) {
   for (const r in chars) chars[r].el.classList.toggle('dim', r !== role)
   chars[role]?.el.classList.add('active')
-  for (const r in chars) if (r !== role) chars[r].el.classList.remove('active')
+  // work moved on: drop every other dog's active state AND its lingering bubble
+  for (const r in chars) if (r !== role) {
+    chars[r].el.classList.remove('active')
+    chars[r].el.querySelector('.bubble')?.remove()
+  }
 }
 
 /* ── flying handoff token (one poodle passes the work to the next) ─────────── */
@@ -215,6 +220,7 @@ function celebrate(ok) {
   for (const r in chars) {
     chars[r].el.classList.remove('dim', 'active')
     chars[r].el.classList.add('cheer')
+    chars[r].el.querySelector('.bubble')?.remove()
   }
   phaseBadge.textContent = ok === false ? 'finished (with notes)' : 'shipped! 🎉'
   tickerEl.textContent = ok === false
