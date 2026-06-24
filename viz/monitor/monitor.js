@@ -192,9 +192,11 @@ window.kennel.onRoster((roster) => {
   }
 
   const working = roster.filter(a => a.state === 'working').length
+  // when idle, leave the header summary empty — the centered "napping" line carries
+  // it, so the top bar isn't a third copy of the same message
   summaryEl.textContent = working
     ? `${working} background agent${working > 1 ? 's' : ''} working…`
-    : (live.size ? 'wrapping up…' : 'the kennel is quiet — no background agents running')
+    : (live.size ? 'wrapping up…' : '')
   const latest = roster[0]
   tickerEl.textContent = latest ? `🌺 ${latest.kind} · ${latest.action}` : '🐩 watching for background agents…'
   document.body.classList.toggle('idle', live.size === 0)

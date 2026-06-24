@@ -89,6 +89,10 @@ body.idle #scene::after {
   font-size: 16px; color: rgba(91, 70, 54, .55);
   pointer-events: none; z-index: 3;
 }
+/* idle: hush the (empty) header bar and fade the leftover chat so the kennel rests calm */
+body.idle #summary { display: none; }
+#chatlog { transition: opacity .5s ease; }
+body.idle #chatlog { opacity: .12; pointer-events: none; }
 
 /* click-a-poodle summary popup */
 #summarypop {
