@@ -132,11 +132,16 @@ const STRESS_DEFS = [
   { kind: 'agent',      task: 'Clean up dead code',                    actions: ['finding unused exports', 'removing the legacy shim', 'running the build to confirm'] },
 ]
 function startStress() {
-  const defs = STRESS_DEFS.map((d, i) => ({ id: `stress-${i}`, ...d }))
+  // DEVCREW_STRESS_N=<1..16> pins the count; otherwise the pack size waves up and down so
+  // you can watch fitStage rescale the poodles live (bigger when sparse, smaller when full).
+  const fixed = Number(process.env.DEVCREW_STRESS_N)
+  const wave = [2, 4, 6, 9, 12, 16, 12, 9, 6, 4]
+  const all = STRESS_DEFS.map((d, i) => ({ id: `stress-${i}`, ...d }))
   let t = 0
   const tick = () => {
     if (!win || win.isDestroyed()) return
-    const roster = defs.map((d, i) => ({
+    const n = fixed ? Math.max(1, Math.min(16, fixed)) : wave[Math.floor(t / 4) % wave.length]
+    const roster = all.slice(0, n).map((d, i) => ({
       agentId: d.id, kind: d.kind, task: d.task,
       action: d.actions[(Math.floor(t / 2) + i) % d.actions.length], state: 'working',
     }))
