@@ -5,12 +5,15 @@ PoodlePack is released under the MIT License — see [LICENSE](LICENSE).
 
 ## Music — "Aloha ʻOe"
 The gentle Hawaiian loop (`viz/assets/music/aloha-oe-loud.mp3`) is **"Aloha ʻOe"**,
-composed by **Queen Liliʻuokalani in 1878**. The composition is in the **public domain**.
+composed by **Queen Liliʻuokalani in 1878** — the composition is in the **public domain**.
 
-The recording used here is a public-domain / CC0 recording, post-processed for this
-project (de-crackled, denoised, and loudness-normalized with ffmpeg).
+The recording is the **Crescent Trio**, a Hawaiian steel-guitar instrumental
+**published in 1921**, digitized by Archive.org's Great 78 Project:
+<https://archive.org/details/78_aloha-oe_crescent-trio_gbia3019236a>
 
-> Recording source: _<!-- TODO: add the exact source URL (e.g. archive.org item) before public release -->_
+It is **public domain**: under the U.S. Music Modernization Act, every sound recording
+first published before 1923 entered the public domain on **January 1, 2022**. The file
+here has been de-crackled, denoised, and loudness-normalized with ffmpeg.
 
 If you fork PoodlePack and prefer your own track, drop an mp3 at
 `viz/assets/music/aloha-oe-loud.mp3` (or change `MUSIC_FILE` in `viz/audio.js`).
