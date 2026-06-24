@@ -86,8 +86,41 @@ function makeCard(a) {
   card.appendChild(bubble)
   card.appendChild(poodle)
   stage.appendChild(card)
-  return { el: card, poodleEl: poodle, bubbleEl: bubble, bubbleTextEl: btext, kind: a.kind, action: null, state: null }
+  const rec = { el: card, poodleEl: poodle, bubbleEl: bubble, bubbleTextEl: btext, kind: a.kind, agent: a, action: null, state: null }
+  card.style.cursor = 'pointer'
+  card.addEventListener('click', () => showSummary(rec))
+  return rec
 }
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+}
+function projName(p) {
+  const m = String(p || '').match(/repos-(.+)$/)
+  return m ? m[1].replace(/-/g, '/') : (p || '')
+}
+
+// click a poodle -> a little summary card with its full task + current action
+function showSummary(rec) {
+  const a = rec.agent
+  if (!a) return
+  const s = styleFor(a.kind)
+  let pop = document.getElementById('summarypop')
+  if (!pop) { pop = document.createElement('div'); pop.id = 'summarypop'; document.getElementById('scene').appendChild(pop) }
+  pop.innerHTML =
+    `<button class="sp-close" aria-label="close">×</button>` +
+    `<div class="sp-head"><span class="sp-flower">${flowerSVG(s.flower)}</span>` +
+    `<span class="sp-kind" style="color:${s.flower}">${escapeHtml(a.kind)}</span>` +
+    `<span class="sp-state">${rec.state === 'done' ? '✓ done' : 'working…'}</span></div>` +
+    `<div class="sp-row"><span class="sp-label">Task</span><span class="sp-val">${escapeHtml(a.task)}</span></div>` +
+    `<div class="sp-row"><span class="sp-label">Now</span><span class="sp-val">${escapeHtml(a.action)}</span></div>` +
+    (a.project ? `<div class="sp-meta">📁 ${escapeHtml(projName(a.project))}</div>` : '')
+  pop.querySelector('.sp-close').onclick = () => pop.classList.remove('show')
+  pop.classList.add('show')
+}
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') document.getElementById('summarypop')?.classList.remove('show')
+})
 
 function shortTask(task) {
   return String(task || '').slice(0, 30) // task is already cleaned in the scanner
@@ -147,6 +180,7 @@ window.kennel.onRoster((roster) => {
   for (const a of roster) {
     let rec = live.get(a.agentId)
     if (!rec) { rec = makeCard(a); live.set(a.agentId, rec) }
+    rec.agent = a // keep fresh for the click-summary popup
     if (setBubble(rec, a.action)) addLog(a)
     if (a.state === 'working') { rec.poodleEl.classList.add('active'); rec.poodleEl.classList.remove('cheer') }
     if (a.state === 'done' && rec.state !== 'done') { rec.poodleEl.classList.remove('active'); celebrate(rec); chime() }

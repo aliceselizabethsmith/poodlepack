@@ -88,3 +88,29 @@ body.idle #stage::after {
   text-align: center;
   font-size: 16px; color: rgba(91, 70, 54, .55);
 }
+
+/* click-a-poodle summary popup */
+#summarypop {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%) scale(.92);
+  width: min(380px, 72%);
+  background: rgba(255, 253, 247, .97);
+  border: 2px solid #ffe3ef; border-radius: 18px;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, .3);
+  padding: 16px 18px; z-index: 50; color: var(--ink);
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+#summarypop.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+#summarypop .sp-close {
+  position: absolute; top: 6px; right: 12px; border: 0; background: none;
+  font-size: 22px; line-height: 1; cursor: pointer; color: #c06591;
+}
+#summarypop .sp-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+#summarypop .sp-flower, #summarypop .sp-flower svg { width: 26px; height: 26px; }
+#summarypop .sp-kind { font-weight: 800; font-size: 17px; text-transform: capitalize; }
+#summarypop .sp-state { margin-left: auto; font-size: 12px; color: #9a8674; }
+#summarypop .sp-row { display: flex; gap: 8px; margin: 6px 0; font-size: 13px; line-height: 1.35; }
+#summarypop .sp-label { font-weight: 700; min-width: 38px; color: #9a8674; }
+#summarypop .sp-val { flex: 1; overflow-wrap: anywhere; }
+#summarypop .sp-meta { margin-top: 10px; font-size: 11.5px; color: #9a8674; }
