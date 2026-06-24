@@ -40,7 +40,7 @@ function createWindow() {
     height: 720,
     minWidth: 760,
     minHeight: 560,
-    title: 'PoodlePack 🌺',
+    title: 'PoodlePack',
     icon: path.join(__dirname, 'assets', 'icon.ico'),
     backgroundColor: '#ffd9a0',
     webPreferences: {

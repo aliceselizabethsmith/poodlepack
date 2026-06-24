@@ -48,7 +48,7 @@ async function loadScanner() {
 function createWindow() {
   win = new BrowserWindow({
     width: 1040, height: 620, minWidth: 720, minHeight: 460,
-    title: 'PoodlePack 🐩',
+    title: 'PoodlePack',
     icon: path.join(__dirname, '..', 'assets', 'icon.ico'),
     backgroundColor: '#ffd9a0',
     webPreferences: {
