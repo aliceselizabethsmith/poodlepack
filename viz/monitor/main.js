@@ -26,8 +26,9 @@ function clearLock() { try { fs.unlinkSync(LOCK) } catch {} }
 // active window: a transcript touched within this many ms = the agent is live.
 // Override with DEVCREW_ACTIVE_MS (handy for testing against older transcripts).
 const ACTIVE_MS = Number(process.env.DEVCREW_ACTIVE_MS) || 60_000
-// how long a finished agent lingers (celebrating) before leaving the kennel
-const LINGER_MS = Number(process.env.DEVCREW_LINGER_MS) || 12_000
+// how long a finished agent lingers before leaving — just long enough to play out
+// the celebration burst, then it's gone (no hanging around the kennel afterward)
+const LINGER_MS = Number(process.env.DEVCREW_LINGER_MS) || 4_000
 
 let scan // loaded from the ESM scanner
 let win = null
@@ -77,7 +78,7 @@ function startDemo() {
     if (!win || win.isDestroyed()) return
     const roster = []
     defs.forEach((d, i) => {
-      const start = i * 2, doneAt = start + 9, gone = doneAt + 6
+      const start = i * 2, doneAt = start + 9, gone = doneAt + 4
       if (t < start || t >= gone) return
       if (t < doneAt) {
         const ai = Math.floor((t - start) / 2.6) % d.actions.length
