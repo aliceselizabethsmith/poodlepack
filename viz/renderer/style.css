@@ -320,7 +320,7 @@ body {
 
 /* finale */
 .confetti {
-  position: absolute; top: -20px; font-size: 20px; z-index: 30;
+  position: absolute; top: -20px; font-size: 14px; z-index: 30;
   animation: fall linear forwards;
 }
 @keyframes fall {

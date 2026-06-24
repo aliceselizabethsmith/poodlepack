@@ -164,7 +164,7 @@ function celebrate(rec) {
     const c = document.createElement('div')
     c.className = 'confetti'
     c.textContent = pieces[i % pieces.length]
-    c.style.fontSize = `${20 + Math.random() * 22}px`
+    c.style.fontSize = `${13 + Math.random() * 12}px`
     c.style.left = `${cx + (Math.random() - 0.5) * 280}px`
     c.style.top = `${cy + (Math.random() - 0.5) * 60}px`
     c.style.animationDuration = `${2.2 + Math.random() * 1.8}s`
