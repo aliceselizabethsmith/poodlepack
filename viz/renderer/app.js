@@ -153,7 +153,7 @@ function speak(role, text, kind) {
   // poodle (bigger size) lifts its bubble higher, so neighbours don't collide.
   // Overlapping the chat history on the right is fine.
   const size = (CAST_STYLE[role] || FALLBACK_STYLE).size
-  b.style.bottom = `${Math.round(175 * size + 60)}px`
+  b.style.bottom = `${Math.round(175 * size + 30)}px`
   c.el.appendChild(b)
   setTimeout(() => { b.classList.add('fade'); setTimeout(() => b.remove(), 400) }, 4800)
 }
@@ -209,8 +209,15 @@ function handoff(fromRole, toRole, emoji) {
 
 /* ── finale ───────────────────────────────────────────────────────────────── */
 function celebrate(ok) {
+  // The whole pack stays up and bounces (the .cheer hop loops) for the finale.
   for (const r in chars) { chars[r].el.classList.remove('dim'); chars[r].el.classList.add('cheer') }
   phaseBadge.textContent = ok === false ? 'finished (with notes)' : 'shipped! 🎉'
+  // Re-burst a few times while they bounce, so the finish really lands.
+  const BURSTS = 4
+  for (let n = 0; n < BURSTS; n++) setTimeout(confettiBurst, n * 1500)
+}
+
+function confettiBurst() {
   const pieces = ['🌺', '🐩', '🎉', '🌴', '⭐', '🐚', '🦩']
   for (let i = 0; i < 46; i++) {
     const c = document.createElement('div')
