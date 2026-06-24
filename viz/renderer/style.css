@@ -258,7 +258,7 @@ body {
 }
 
 /* ── ticker ───────────────────────────────────────────────────────────────── */
-.pawpoodle { width: 19px; height: 16px; vertical-align: -3px; margin-right: 2px; }
+.pawpoodle { width: auto; height: 22px; vertical-align: -6px; margin-right: 5px; }
 
 #ticker {
   position: absolute; bottom: 0; left: 0; right: 0;

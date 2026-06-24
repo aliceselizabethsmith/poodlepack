@@ -14,6 +14,8 @@ const audio = require('./audio')
 // the shared cross-platform helper (ffplay), which no-ops silently if ffplay is absent.
 const MUSIC_FILE = path.join(__dirname, 'assets', 'music', 'aloha-oe-loud.mp3')
 const CHIME_FILE = path.join(__dirname, 'assets', 'sounds', 'tada.wav')
+// After the crew ships, let the celebration play out, then close the window on its own.
+const CLOSE_AFTER_FINALE_MS = 11000
 
 // Resolve the run folder from --run-dir <path> or DEVCREW_RUN_DIR, relative to CWD.
 function resolveRunDir() {
@@ -118,7 +120,11 @@ function startWatching() {
     if (status && status.state && status.state !== lastStatus) {
       lastStatus = status.state
       win.webContents.send('status', status)
-      if (status.state === 'done') audio.playChime(CHIME_FILE) // celebratory tada on ship
+      if (status.state === 'done') {
+        audio.playChime(CHIME_FILE) // celebratory tada on ship
+        // let the confetti + bounce finish, then close the console on its own
+        setTimeout(() => { if (win && !win.isDestroyed()) win.close() }, CLOSE_AFTER_FINALE_MS)
+      }
     }
   }
 
