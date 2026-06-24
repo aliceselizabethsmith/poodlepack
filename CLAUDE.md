@@ -97,8 +97,8 @@ without a shell throws `EINVAL` on Windows. Keep both of those when editing the 
   poodle, add it to `CAST` in `build-app.js` and to `CAST_STYLE` in `viz/renderer/app.js`.
 - To restyle a poodle, edit `CAST_STYLE` (color/size/accessory) and `poodleSVG()` in
   `viz/renderer/app.js`.
-- This is a personal tool, not Magline work — no Magline customer data, initiative STATE files, or
-  OneDrive output belong here.
+- This is a personal hobby project — keep any work/employer data, internal project files, or
+  cloud-synced work output out of it.
 
 ## Conventions
 
