@@ -90,12 +90,12 @@ Built apps land in `projects/<name>/`. To launch it **with the live window** fro
 ## Requirements
 
 - **Node 18+** and **Electron** (installed by `npm install` in `viz/`).
-- **ffmpeg** (optional) — the gentle Hawaiian music + completion chime play through `ffplay` (`brew install ffmpeg` / `sudo apt install ffmpeg` / `choco install ffmpeg`). No ffmpeg? It stays silent and everything else works.
+- **Audio** — built in on **Windows** (the .NET MediaPlayer, nothing to install — and it correctly follows your default output device, even virtual ones like SoundWire). On **macOS/Linux** the music + chime play through **ffplay** (`brew install ffmpeg` / `sudo apt install ffmpeg`); without it, audio is a silent no-op and everything else still works.
 - **Claude Code** — for real (non-demo) use: Watch reads its transcripts, Build runs as one of its Workflows.
 
 ## Platform support
 
-Runs on **Windows, macOS, and Linux**. The windows, the transcript scanner, the launch hook, and audio are all cross-platform — `viz/audio.js` routes music + the chime through `ffplay` and silently no-ops if ffmpeg isn't installed. Developed and most heavily tested on Windows; if you hit a rough edge on macOS/Linux, please open an issue or PR. 🐩
+Runs on **Windows, macOS, and Linux**. The windows, the transcript scanner, the launch hook, and audio are all cross-platform — Windows plays audio through the built-in .NET MediaPlayer (which follows the system default output device, virtual ones included), while macOS/Linux use `ffplay`. Developed and most heavily tested on Windows; if you hit a rough edge on macOS/Linux, please open an issue or PR. 🐩
 
 ## How it works
 

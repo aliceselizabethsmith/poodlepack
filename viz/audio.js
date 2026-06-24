@@ -1,38 +1,58 @@
-// Cross-platform, best-effort audio for the PoodlePack windows.
+// Best-effort audio for the PoodlePack windows. Routed through the OS (not the
+// renderer's <audio>/Web Audio) because Chromium's audio path is silent on some
+// Windows setups.
 //
-// Both the looping music and the one-shot chime play through ffplay (part of
-// ffmpeg), which exists on Windows, macOS and Linux — so there is a single,
-// optional dependency. If ffplay isn't installed, every call here is a silent
-// no-op and the windows still run perfectly; audio is a bonus, never required.
+//   Windows      -> .NET MediaPlayer via play-audio.ps1. Media Foundation follows the
+//                   real default output device, including VIRTUAL devices like SoundWire
+//                   that ffplay/SDL silently miss — and needs no ffmpeg.
+//   macOS/Linux  -> ffplay (part of ffmpeg). Optional: a silent no-op if not installed.
 //
-// (We route through the OS rather than the renderer's <audio>/Web Audio because
-// Chromium's audio path is silent on some Windows setups.)
+// Either way, if the player is missing every call here is a silent no-op and the
+// windows still run perfectly; audio is a bonus, never required.
 const { spawn, execSync } = require('child_process')
+const path = require('path')
 
 const IS_WIN = process.platform === 'win32'
-const FFPLAY = ['-nodisp', '-autoexit', '-loglevel', 'quiet']
+const PS_HELPER = path.join(__dirname, 'play-audio.ps1')
+const STOP_HELPER = path.join(__dirname, 'stop-audio.ps1')
 
 let musicProc = null
 let lastChime = 0
 
-// Loop a track forever at a gentle volume.
+const clamp01 = (x) => Math.max(0, Math.min(1, x))
+
+// Spawn the platform player for `file`. `loop` repeats forever (music) vs once (chime).
+function spawnPlayer(file, volume, loop) {
+  if (IS_WIN) {
+    // -STA + a Dispatcher message pump (inside the .ps1) so MediaPlayer events fire.
+    const args = ['-NoProfile', '-STA', '-ExecutionPolicy', 'Bypass', '-File', PS_HELPER,
+      '-Path', file, '-Volume', String(clamp01(volume / 100))]
+    if (loop) args.push('-Loop')
+    return spawn('powershell', args, { stdio: 'ignore', windowsHide: true })
+  }
+  const args = ['-nodisp', '-autoexit', '-loglevel', 'quiet']
+  if (loop) args.push('-loop', '0')
+  args.push('-volume', String(volume), file)
+  return spawn('ffplay', args, { stdio: 'ignore' })
+}
+
+// Loop a track forever at a gentle volume (0-100).
 function startMusic(file, volume = 40) {
   if (musicProc || !file) return
   try {
-    // shell:true on Windows so the bare `ffplay` resolves through PATHEXT; off-Windows
-    // we spawn it directly so kill() reaches the process itself.
-    musicProc = spawn('ffplay', [...FFPLAY, '-loop', '0', '-volume', String(volume), file],
-      { stdio: 'ignore', shell: IS_WIN })
-    musicProc.on('error', () => { musicProc = null }) // no ffplay -> stay silent
+    musicProc = spawnPlayer(file, volume, true)
+    musicProc.on('error', () => { musicProc = null }) // player missing -> stay silent
     musicProc.on('exit', () => { musicProc = null })
   } catch { musicProc = null }
 }
 
 function stopMusic() {
   if (musicProc) { try { musicProc.kill() } catch {} musicProc = null }
-  // shell:true can leave the real ffplay.exe orphaned on Windows. Kill it synchronously
-  // so it's gone before the app quits on window close (an async kill can lose the race).
-  if (IS_WIN) { try { execSync('taskkill /F /IM ffplay.exe', { stdio: 'ignore' }) } catch {} }
+  // On Windows the -STA host can spawn a child / a hard kill can orphan it, so sweep
+  // by script name (synchronously, so it's gone before the app quits on window close).
+  if (IS_WIN) {
+    try { execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${STOP_HELPER}"`, { stdio: 'ignore' }) } catch {}
+  }
 }
 
 function isMusicPlaying() { return !!musicProc }
@@ -44,8 +64,8 @@ function playChime(file, { debounceMs = 900, volume = 70 } = {}) {
   if (now - lastChime < debounceMs) return
   lastChime = now
   try {
-    const p = spawn('ffplay', [...FFPLAY, '-volume', String(volume), file], { stdio: 'ignore', shell: IS_WIN })
-    p.on('error', () => {}) // no ffplay -> silent
+    const p = spawnPlayer(file, volume, false)
+    p.on('error', () => {}) // player missing -> silent
   } catch {}
 }
 
