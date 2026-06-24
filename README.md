@@ -41,21 +41,21 @@ It scans `~/.claude/projects/**/subagents/agent-*.jsonl` (Claude Code's own tran
 
 ### Auto-launch on background agents
 
-The whole point of the Kennel is that you don't open it — it appears when agents start. That's a Claude Code **`PostToolUse` hook** on the `Agent` tool. On Windows, add to `~/.claude/settings.json`:
+The whole point of the Kennel is that you don't open it — it appears when agents start. That's a Claude Code **`PostToolUse` hook** on the `Agent` tool. Add this to `~/.claude/settings.json` — **identical on Windows, macOS, and Linux**:
 
 ```json
 {
   "hooks": {
     "PostToolUse": [
       { "matcher": "Agent", "hooks": [
-        { "type": "command", "command": "node \"<path-to>/poodlepack/viz/monitor-window.mjs\" ensure" }
+        { "type": "command", "command": "node \"<path-to>/poodlepack/viz/monitor-window.mjs\" hook" }
       ] }
     ]
   }
 }
 ```
 
-`ensure` is idempotent (a lockfile prevents a second window). On macOS/Linux, point the command at `node` the same way.
+The `hook` subcommand reads the tool payload and opens the Kennel only for **background** agents. It's idempotent (a lockfile prevents a second window) and always exits cleanly, so it never blocks Claude Code.
 
 ---
 
@@ -85,12 +85,12 @@ Built apps land in `projects/<name>/`. To launch it **with the live window** fro
 ## Requirements
 
 - **Node 18+** and **Electron** (installed by `npm install` in `viz/`).
-- **ffmpeg** (optional) — the gentle Hawaiian music + completion chime play through `ffplay`. No ffmpeg? It stays silent and everything else works.
+- **ffmpeg** (optional) — the gentle Hawaiian music + completion chime play through `ffplay` (`brew install ffmpeg` / `sudo apt install ffmpeg` / `choco install ffmpeg`). No ffmpeg? It stays silent and everything else works.
 - **Claude Code** — for real (non-demo) use: Watch reads its transcripts, Build runs as one of its Workflows.
 
 ## Platform support
 
-Developed on Windows. Audio and the launch scripts are cross-platform (`viz/audio.js` routes through `ffplay` and no-ops without it), but the auto-launch hook example and a couple of helper paths are Windows-first — macOS/Linux users may need to adapt the `taskkill`/PowerShell bits. PRs welcome. 🐩
+Runs on **Windows, macOS, and Linux**. The windows, the transcript scanner, the launch hook, and audio are all cross-platform — `viz/audio.js` routes music + the chime through `ffplay` and silently no-ops if ffmpeg isn't installed. Developed and most heavily tested on Windows; if you hit a rough edge on macOS/Linux, please open an issue or PR. 🐩
 
 ## How it works
 
