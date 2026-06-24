@@ -7,7 +7,6 @@ const summaryEl = document.getElementById('summary')
 const tickerEl = document.getElementById('ticker-text')
 const fxLayer = document.getElementById('fx')
 const muteBtn = document.getElementById('mute')
-const music = document.getElementById('music')
 
 // agent kind -> poodle look (mirrors the build cast where it overlaps)
 const KIND_STYLE = {
@@ -55,53 +54,15 @@ function flowerSVG(color) {
   return `<svg viewBox="0 0 26 26"><g>${petals}</g><circle cx="13" cy="13" r="4" fill="#fff3c4"/><circle cx="13" cy="13" r="1.9" fill="#ffb74d"/></svg>`
 }
 
-/* ── completion chime (synthesized; plays even when window is unfocused) ──────*/
+/* ── audio (played by the main process via the OS, not Electron) ─────────────*/
 let muted = false
-let audioCtx = null
-function chime() {
-  if (muted) return
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)()
-    if (audioCtx.state === 'suspended') audioCtx.resume()
-    const t0 = audioCtx.currentTime
-    ;[880, 1174.7, 1567.98].forEach((freq, i) => {       // a soft rising arpeggio
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain()
-      o.type = 'sine'; o.frequency.value = freq
-      const start = t0 + i * 0.11
-      g.gain.setValueAtTime(0, start)
-      g.gain.linearRampToValueAtTime(0.16, start + 0.02)
-      g.gain.exponentialRampToValueAtTime(0.0008, start + 0.6)
-      o.connect(g); g.connect(audioCtx.destination); o.start(start); o.stop(start + 0.62)
-    })
-  } catch { /* audio unavailable — silent */ }
-}
-// gentle Hawaiian background loop
-if (music) {
-  music.volume = 0.5
-  music.addEventListener('error', () => console.log('MUSIC error code=' + (music.error && music.error.code)))
-  music.play().then(() => console.log('MUSIC playing')).catch(e => console.log('MUSIC play rejected: ' + e))
-}
-try {
-  const probe = new (window.AudioContext || window.webkitAudioContext)()
-  console.log('AUDIOCTX state=' + probe.state)
-} catch (e) { console.log('AUDIOCTX error: ' + e) }
+function chime() { if (!muted) window.kennel.chime() } // OS completion sound
+window.kennel.playMusic(true)                          // start the OS music loop
 muteBtn.addEventListener('click', () => {
   muted = !muted
   muteBtn.textContent = muted ? '🔇' : '🔊'
-  if (muted) { music?.pause() }
-  else {
-    music?.play().catch(() => {})
-    if (audioCtx?.state === 'suspended') audioCtx.resume()
-  }
+  window.kennel.playMusic(!muted)
 })
-
-// if autoplay was blocked, kick the music off on the first interaction
-function ensureMusic() {
-  if (music && !muted && music.paused) music.play().catch(() => {})
-  if (audioCtx?.state === 'suspended') audioCtx.resume()
-}
-window.addEventListener('click', ensureMusic)
-window.addEventListener('keydown', ensureMusic)
 
 /* ── roster reconciliation ───────────────────────────────────────────────────*/
 const live = new Map() // agentId -> { el, poodleEl, bubbleEl, kind, action, state }

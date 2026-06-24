@@ -7,6 +7,33 @@ const path = require('path')
 const fs = require('fs')
 const os = require('os')
 const { pathToFileURL } = require('url')
+const { spawn, exec } = require('child_process')
+
+// ── audio via the OS (Electron's own audio path is unreliable on some Windows
+// setups — it reports playing but no sound). ffplay loops the music; PowerShell
+// SoundPlayer plays the completion sound, the same path the user's hooks use. ──
+const MUSIC_FILE = path.join(__dirname, '..', 'assets', 'music', 'aloha-oe-loud.mp3')
+let musicProc = null
+function startMusic() {
+  if (musicProc) return
+  try {
+    musicProc = spawn('ffplay', ['-nodisp', '-autoexit', '-loglevel', 'quiet', '-loop', '0', '-volume', '40', MUSIC_FILE],
+      { stdio: 'ignore', shell: true })
+    musicProc.on('exit', () => { musicProc = null })
+    musicProc.on('error', () => { musicProc = null })
+  } catch { musicProc = null }
+}
+function stopMusic() {
+  if (musicProc) { try { musicProc.kill() } catch {} musicProc = null }
+  // ffplay is launched via a shell, so the handle above is the shell, not ffplay —
+  // make sure the actual player is gone so audio never outlives the window
+  try { exec('taskkill /F /IM ffplay.exe') } catch {}
+}
+function playChime() {
+  exec(`powershell -NoProfile -Command "(New-Object Media.SoundPlayer 'C:\\Windows\\Media\\tada.wav').PlaySync()"`)
+}
+ipcMain.handle('music', (_e, on) => { if (on) startMusic(); else stopMusic(); return !!musicProc })
+ipcMain.on('chime', playChime)
 
 // lockfile so the launcher's `ensure` never opens a second window
 const LOCK = path.join(os.homedir(), '.devcrew', 'monitor.lock')
@@ -47,9 +74,11 @@ function createWindow() {
   })
   win.loadFile(path.join(__dirname, 'index.html'))
   win.webContents.once('did-finish-load', () => {
+    startMusic()
     if (process.env.DEVCREW_DEMO) startDemo()
     else startPolling()
   })
+  win.on('closed', stopMusic)
 }
 
 // DEVCREW_DEMO=1 : a scripted loop so you can verify every state — agents start
@@ -128,8 +157,13 @@ ipcMain.handle('active-ms', () => ACTIVE_MS)
 
 // allow the gentle Hawaiian loop to start without a user gesture
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
+// Known Electron/Windows bug: the out-of-process audio service can fail to reach
+// the output device — the page "plays" (clock advances) but no sound comes out.
+// Forcing audio in-process fixes the silent-output case.
+app.commandLine.appendSwitch('disable-features', 'AudioServiceOutOfProcess,AudioServiceSandbox')
 
 app.whenReady().then(async () => { await loadScanner(); writeLock(); createWindow() })
-app.on('window-all-closed', () => { clearLock(); app.quit() })
-app.on('quit', clearLock)
+app.on('window-all-closed', () => { stopMusic(); clearLock(); app.quit() })
+app.on('before-quit', stopMusic)
+app.on('quit', () => { stopMusic(); clearLock() })
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
