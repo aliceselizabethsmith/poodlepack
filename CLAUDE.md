@@ -75,11 +75,11 @@ node viz/run-window.mjs status --state done --ok true
 
 ### Calling it from any workspace
 
-A global skill `dev-crew` (`~/.claude/skills/dev-crew/SKILL.md`) makes the crew callable from any
+A global skill `poodlepack` (`~/.claude/skills/poodlepack/SKILL.md`) makes the crew callable from any
 workspace, not just this repo. It runs the same ritual using absolute paths back here, so the window
 launches from this install while the built project + run folder land in **whatever workspace the build
 was invoked from** (`<cwd>/projects/<name>` and `<cwd>/.devcrew/run`). A global rule
-(`~/.claude/rules/dev-crew.md`) tells Claude to suggest the crew for new multi-file scaffolding tasks.
+(`~/.claude/rules/poodlepack.md`) tells Claude to suggest the crew for new multi-file scaffolding tasks.
 When iterating on the workflow, still invoke it by `scriptPath` (not `name`) to avoid the cached copy.
 
 ### Gotcha: ELECTRON_RUN_AS_NODE

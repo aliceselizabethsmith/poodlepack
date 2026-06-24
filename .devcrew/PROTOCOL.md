@@ -1,4 +1,4 @@
-# Dev Crew event protocol
+# PoodlePack event protocol
 
 The build-app workflow and the kawaii Kauai visualizer are decoupled. They talk only
 through files in a fixed **run folder** at the repo root: `.devcrew/run/`.

@@ -1,8 +1,8 @@
 {
-  "name": "devcrew-viz",
+  "name": "poodlepack-viz",
   "version": "1.0.0",
   "private": true,
-  "description": "Kawaii Kauai crew visualizer for the Dev Crew build-app workflow",
+  "description": "Kawaii Kauai visualizer for the PoodlePack build pipeline",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
