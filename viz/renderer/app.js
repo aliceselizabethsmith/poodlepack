@@ -149,10 +149,11 @@ function speak(role, text, kind) {
   const b = document.createElement('div')
   b.className = `bubble ${kind || ''}`
   b.textContent = text
-  // float the bubble above the head, scaled to the poodle's size so bigger dogs
-  // (Opal) get more clearance and don't have the bubble overlap their fluff
+  // Float bubbles well clear of the heads, staggered by poodle height: a taller
+  // poodle (bigger size) lifts its bubble higher, so neighbours don't collide.
+  // Overlapping the chat history on the right is fine.
   const size = (CAST_STYLE[role] || FALLBACK_STYLE).size
-  b.style.bottom = `${Math.round(128 * size + 28)}px`
+  b.style.bottom = `${Math.round(175 * size + 60)}px`
   c.el.appendChild(b)
   setTimeout(() => { b.classList.add('fade'); setTimeout(() => b.remove(), 400) }, 4800)
 }
