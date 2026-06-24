@@ -61,7 +61,7 @@ fs.writeFileSync(path.join(RUN_DIR, 'status.json'), JSON.stringify({ state: 'run
 // inside another Electron app) it forces Electron to run as plain Node and no window opens.
 const childEnv = { ...process.env, DEVCREW_RUN_DIR: RUN_DIR }
 delete childEnv.ELECTRON_RUN_AS_NODE
-const electronExe = require('electron') // the electron package returns the .exe path when required from Node
+const electronExe = require('electron') // resolves to the platform's Electron binary (Win/mac/Linux)
 const child = spawn(electronExe, ['.'], {
   cwd: VIZ_DIR, env: childEnv,
   detached: true, stdio: 'ignore', shell: false,

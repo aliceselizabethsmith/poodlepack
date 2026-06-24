@@ -57,7 +57,7 @@ function cmdStart() {
   // app like an IDE or Claude Code) it forces Electron to run headless as plain Node.
   const childEnv = { ...process.env, DEVCREW_RUN_DIR: RUN_DIR }
   delete childEnv.ELECTRON_RUN_AS_NODE
-  const electronExe = require('electron') // returns the .exe path when required from Node
+  const electronExe = require('electron') // resolves to the platform's Electron binary (Win/mac/Linux)
   const child = spawn(electronExe, ['.'], {
     cwd: VIZ_DIR,
     env: childEnv,
