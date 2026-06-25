@@ -19,12 +19,11 @@
 
     <header id="hud">
       <div class="title">Poodle<span class="dash">Pack</span> <span class="lei">🌺</span></div>
-      <div id="summary" class="spec"></div>
+      <!-- the featured agent's status, inline in the header (was a separate bottom bar).
+           The pack itself conveys how many agents are running, so there's no count here. -->
+      <div id="taskline" class="taskline"></div>
       <button id="mute" class="mute-btn" title="mute music">🔊</button>
     </header>
-
-    <!-- the featured agent's current task, persistent under the header -->
-    <div id="taskline" class="taskline"></div>
 
     <div id="stage"></div>
     <div id="chatlog"></div>

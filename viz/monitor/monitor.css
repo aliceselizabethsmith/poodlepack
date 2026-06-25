@@ -4,7 +4,7 @@
 /* the kennel: a wrapping grid of small agent cards, scrolls if it overflows */
 #stage {
   position: absolute;
-  left: 1.5%; right: 26.5%; top: 56px; bottom: 70px;   /* bottom clears the task line */
+  left: 1.5%; right: 26.5%; top: 56px; bottom: 40px;   /* bottom clears the footer ticker */
   height: auto;            /* override style.css's height:60% so top+bottom = full height */
   display: flex; flex-wrap: wrap;
   /* anchor the pack to the bottom so they stand on the sand — with one or two agents
@@ -68,11 +68,23 @@
 
 /* scrolling chat history (reuses #chatlog from style.css; make it taller here) */
 #chatlog {
-  top: 56px; right: 1.5%; bottom: 70px;
+  top: 56px; right: 1.5%; bottom: 40px;
   width: 24%; max-width: 400px;
   max-height: none;
   gap: 8px;
 }
+
+/* the featured agent's status now lives inline in the header (it used to be a
+   separate bar pinned above the footer ticker). Fill the gap between the title and
+   the mute button, and let the task text flex/ellipsize so the kind sticker never
+   crowds or clips it. */
+#hud .taskline {
+  position: static;
+  flex: 1; min-width: 0; max-width: none;
+  background: rgba(255, 255, 255, .72);
+  border-radius: 14px; padding: 5px 14px;
+}
+#hud .taskline .tl-text { flex: 1; min-width: 0; }
 
 /* idle mood — a DEDICATED overlay element. (Must NOT reuse #scene::after: that
    pseudo-element is the sand in the shared style.css, and overriding it here wiped
@@ -94,10 +106,9 @@ body.idle #napmsg { display: block; }
   text-shadow: 0 1px 2px rgba(255, 255, 255, .6);
   vertical-align: -2px; margin-right: 5px;
 }
-/* idle: clear the header bar and hide the leftover chat entirely, so a sleeping
-   kennel is just the clean beach + the centered "napping" line (chat returns the
-   moment agents do, fading back in) */
-body.idle #summary { display: none; }
+/* idle: hide the leftover chat entirely, so a sleeping kennel is just the clean
+   beach + the centered "napping" line. The header taskline self-hides when empty
+   (.taskline:empty), so the top bar clears itself. Chat fades back the moment agents do. */
 body.idle #chatlog { display: none; }
 
 /* click-a-poodle summary popup */

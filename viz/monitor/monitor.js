@@ -3,7 +3,6 @@
 
 const stage = document.getElementById('stage')
 const chatlog = document.getElementById('chatlog')
-const summaryEl = document.getElementById('summary')
 const taskEl = document.getElementById('taskline')
 const tickerEl = document.getElementById('ticker-text')
 const fxLayer = document.getElementById('fx')
@@ -213,14 +212,10 @@ window.kennel.onRoster((roster) => {
     if (!ids.has(id)) { rec.el.remove(); live.delete(id) }
   }
 
-  const working = roster.filter(a => a.state === 'working').length
-  // when idle, leave the header summary empty — the centered "napping" line carries
-  // it, so the top bar isn't a third copy of the same message
-  summaryEl.textContent = working
-    ? `${working} background agent${working > 1 ? 's' : ''} working…`
-    : (live.size ? 'wrapping up…' : '')
   const latest = roster[0]
   tickerEl.textContent = latest ? `🌺 ${latest.kind} · ${latest.action}` : '🐩 watching for background agents…'
+  // the header taskline carries the featured agent (kind sticker + task); the poodles
+  // themselves convey how many are running, so there's no separate count line
   setTaskLine(latest ? latest.kind : '', latest ? latest.task : '', latest ? styleFor(latest.kind).flower : '')
   document.body.classList.toggle('idle', live.size === 0)
   fitStage()
