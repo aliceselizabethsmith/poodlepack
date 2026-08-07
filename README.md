@@ -58,7 +58,7 @@ The whole point of the Kennel is that you don't open it — it appears when agen
 }
 ```
 
-Use the **absolute** path to your clone, and keep it **double-quoted** — required if the path contains spaces (e.g. a cloud-synced folder like `Proton Drive/My files/...`). The `hook` subcommand reads the tool payload on stdin and opens the Kennel only for **background** agents (`run_in_background: true`). It's idempotent (a lockfile prevents a second window) and always exits cleanly, so it never blocks Claude Code.
+Use the **absolute** path to your clone, and keep it **double-quoted** — required if the path contains spaces (e.g. a cloud-synced folder like `Proton Drive/My files/...`). The `hook` subcommand reads the tool payload on stdin and opens the Kennel only for **background** agents. Note that agents run in the background *by default*, so `run_in_background` is usually absent from the payload entirely — the check is "not `false`", not "is `true`". It's idempotent (a lockfile prevents a second window) and always exits cleanly, so it never blocks Claude Code.
 
 **Verify it** — this should print `opening kennel` and pop the window:
 
