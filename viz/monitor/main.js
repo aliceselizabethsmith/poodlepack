@@ -12,7 +12,7 @@ const audio = require('../audio')
 // Gentle music loop + a finale chime via the shared helper (viz/audio.js): .NET
 // MediaPlayer on Windows, ffplay on macOS/Linux. Silent no-op if the player is absent.
 const MUSIC_FILE = path.join(__dirname, '..', 'assets', 'music', 'aloha-oe-loud.mp3')
-const CHIME_FILE = path.join(__dirname, '..', 'assets', 'sounds', 'tada.wav')
+const CHIME_FILE = path.join(__dirname, '..', 'assets', 'sounds', 'chime.wav')
 ipcMain.handle('music', (_e, on) => {
   if (on) audio.startMusic(MUSIC_FILE); else audio.stopMusic()
   return audio.isMusicPlaying()

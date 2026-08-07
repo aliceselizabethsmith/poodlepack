@@ -13,7 +13,7 @@ const audio = require('./audio')
 // Gentle Hawaiian loop while the crew works; a chime when they ship. Audio goes through
 // the shared helper (viz/audio.js): .NET MediaPlayer on Windows, ffplay on macOS/Linux.
 const MUSIC_FILE = path.join(__dirname, 'assets', 'music', 'aloha-oe-loud.mp3')
-const CHIME_FILE = path.join(__dirname, 'assets', 'sounds', 'tada.wav')
+const CHIME_FILE = path.join(__dirname, 'assets', 'sounds', 'chime.wav')
 // After the crew ships, let the celebration play out, then close the window on its own.
 const CLOSE_AFTER_FINALE_MS = 11000
 
@@ -122,7 +122,7 @@ function startWatching() {
       lastStatus = status.state
       win.webContents.send('status', status)
       if (status.state === 'done') {
-        audio.playChime(CHIME_FILE) // celebratory tada on ship
+        audio.playChime(CHIME_FILE) // celebratory chime on ship
         // let the confetti + bounce finish, then close the console on its own
         setTimeout(() => { if (win && !win.isDestroyed()) win.close() }, CLOSE_AFTER_FINALE_MS)
       }

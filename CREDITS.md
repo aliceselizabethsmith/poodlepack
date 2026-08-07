@@ -19,8 +19,18 @@ If you fork PoodlePack and prefer your own track, drop an mp3 at
 `viz/assets/music/aloha-oe-loud.mp3` (or change `MUSIC_FILE` in `viz/audio.js`).
 
 ## Completion chime
-`viz/assets/sounds/tada.wav` is the standard Windows "tada" notification sound,
-bundled so the chime works cross-platform without depending on a system path.
+`viz/assets/sounds/chime.wav` is **generated, not sampled** — a rising E-major
+arpeggio synthesized from sine partials under a bell-like decay envelope by
+[`viz/tools/make-chime.cjs`](viz/tools/make-chime.cjs). Pure Node, no
+dependencies, no external audio. Re-render it or retune the notes with:
+
+```bash
+node viz/tools/make-chime.cjs
+```
+
+Earlier versions of PoodlePack bundled the Windows "tada" sound here. That file
+is Microsoft's and is licensed for use on Windows rather than for
+redistribution, so it was removed before this repository was made public.
 
 ## Art
 All poodle artwork, the Kauai beach scene, and the UI are original, drawn in code
