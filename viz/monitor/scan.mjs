@@ -53,13 +53,27 @@ function firstUserText(lines) {
   return ''
 }
 
+// Cut to a length the UI can show, but never mid-word and never silently.
+// A bare slice() produces things like "searching for the config direc" — the
+// reader cannot tell whether that is the whole thought or a truncation, which
+// is the single thing that made the narration feel broken.
+function clip(text, max) {
+  const t = String(text || '').trim()
+  if (t.length <= max) return t
+  const cut = t.slice(0, max)
+  const lastSpace = cut.lastIndexOf(' ')
+  // Only honour the word boundary if it is not absurdly early (a single very
+  // long token, a path or a URL, has no usable space to break on).
+  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`
+}
+
 // a short, human task label — drop the crew persona preamble ("You are X, a Y …
 // building this project:") so the nameplate shows the real assignment, not boilerplate
 function cleanTask(full) {
   let t = full.replace(/^You are .*?building this project:?\s*/i, '')
   if (t === full) t = full.replace(/^You are [^.,:]*[.,:]\s*/i, '')
-  const m = t.match(/(?:Spec|Your job|Task)\s*:?\s*"?([^"\n]{4,90})/i)
-  return ((m ? m[1] : t).trim().slice(0, 80)) || 'working'
+  const m = t.match(/(?:Spec|Your job|Task)\s*:?\s*"?([^"\n]{4,160})/i)
+  return clip(m ? m[1] : t, 140) || 'working'
 }
 
 function baseName(p) { return p ? path.basename(String(p)) : '' }
@@ -70,11 +84,11 @@ function toolPhrase(name, input = {}) {
     case 'Read': return `reading ${baseName(input.file_path)}`
     case 'Edit': return `editing ${baseName(input.file_path)}`
     case 'Write': return `writing ${baseName(input.file_path)}`
-    case 'Bash': return `running: ${String(input.command || '').slice(0, 48)}`
-    case 'Grep': return `searching for "${String(input.pattern || '').slice(0, 40)}"`
-    case 'Glob': return `finding files: ${input.pattern || ''}`
+    case 'Bash': return `running: ${clip(input.command, 110)}`
+    case 'Grep': return `searching for "${clip(input.pattern, 80)}"`
+    case 'Glob': return `finding files: ${clip(input.pattern, 80)}`
     case 'WebFetch': return `reading ${baseName(input.url) || input.url || 'a page'}`
-    case 'WebSearch': return `web search: ${String(input.query || '').slice(0, 40)}`
+    case 'WebSearch': return `web search: ${clip(input.query, 80)}`
     case 'Task': case 'Agent': return 'delegating a sub-task'
     case 'TodoWrite': return 'updating its plan'
     default: return `${name}…`
@@ -91,8 +105,7 @@ function actionOf(lines) {
         const b = e.message.content[j]
         if (b.type === 'tool_use') return toolPhrase(b.name, b.input)
         if (b.type === 'text' && b.text && b.text.trim()) {
-          const t = b.text.trim().replace(/\s+/g, ' ')
-          return t.length > 220 ? `${t.slice(0, 220)}…` : t
+          return clip(b.text.trim().replace(/\s+/g, ' '), 220)
         }
       }
       return 'thinking…'

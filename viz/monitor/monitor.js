@@ -143,8 +143,18 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') document.getElementById('summarypop')?.classList.remove('show')
 })
 
+// The nameplate is ~200px across and clamps to two lines in CSS, which holds
+// roughly 70 characters at 11px. The old 30-character slice threw away half of
+// what the pill could already display, and cut mid-word with no ellipsis, so a
+// truncated label was indistinguishable from a genuinely short one. The
+// scanner has already cleaned and clipped the task; trust it and let CSS do
+// the final visual clamp, with the full text on hover.
 function shortTask(task) {
-  return String(task || '').slice(0, 30) // task is already cleaned in the scanner
+  const t = String(task || '').trim()
+  if (t.length <= 72) return t
+  const cut = t.slice(0, 72)
+  const lastSpace = cut.lastIndexOf(' ')
+  return `${(lastSpace > 43 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`
 }
 
 // returns true if the action text changed

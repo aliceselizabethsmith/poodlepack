@@ -56,9 +56,12 @@
   border-width: 7px 6px 0 6px; border-style: solid;
   border-color: rgba(255, 253, 247, .38) transparent transparent transparent;
 }
-/* show the action in full if it fits in 2 lines; clamp + hover-for-full if longer */
+/* show the action in full if it fits in 4 lines; clamp + hover-for-full if longer.
+   Two lines cut most real actions mid-sentence -- "running: git filter-branch
+   --force --index-filter" is already two lines on its own. Four costs a little
+   vertical room per card, which fitStage() absorbs by scaling the stage. */
 .cardbubble .bubbletext {
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .cardbubble[title] { cursor: default; }
@@ -84,7 +87,17 @@
   background: rgba(255, 255, 255, .72);
   border-radius: 14px; padding: 5px 14px;
 }
-#hud .taskline .tl-text { flex: 1; min-width: 0; }
+/* The shared style pins .tl-text to one nowrap line with an ellipsis, which is
+   right for the build window's spec but wrong here: a watched agent's task is a
+   sentence, and one line of it reads as a fragment. Allow two lines and let the
+   header grow into them. Full text stays available on hover via the title. */
+#hud .taskline .tl-text {
+  flex: 1; min-width: 0;
+  white-space: normal; text-overflow: clip;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; line-height: 1.35;
+}
+#hud .taskline { align-items: flex-start; }
 
 /* idle mood — a DEDICATED overlay element. (Must NOT reuse #scene::after: that
    pseudo-element is the sand in the shared style.css, and overriding it here wiped
