@@ -65,9 +65,13 @@ if (cmd === 'ensure') {
   process.stdin.on('data', (d) => { payload += d })
   process.stdin.on('error', () => process.exit(0))
   process.stdin.on('end', () => {
-    // parse the payload and check the real field, not a loose substring match
+    // Parse the payload and check the real field, not a loose substring match.
+    // The Agent tool runs in the BACKGROUND BY DEFAULT — the field is absent from the
+    // payload unless the caller explicitly opts out with run_in_background:false. So the
+    // background test is "not === false", not "=== true"; an omitted flag is still a
+    // background agent and must open the kennel. Parse failure stays false (fail closed).
     let background = false
-    try { background = JSON.parse(payload)?.tool_input?.run_in_background === true } catch {}
+    try { background = JSON.parse(payload)?.tool_input?.run_in_background !== false } catch {}
     if (background) ensure()
     process.exit(0)
   })
