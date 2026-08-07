@@ -21,6 +21,26 @@ cd poodlepack/viz
 npm install          # pulls Electron (git-ignored, so this is required once)
 ```
 
+**Verify the install before going further.** Electron downloads its ~200 MB binary in a
+postinstall step, separately from the npm packages. Behind a proxy, a firewall, or an offline
+mirror that step can fail **silently** — `npm install` still exits 0 and prints no error, leaving
+you with a package folder but no runnable Electron. Check:
+
+```bash
+node -e "console.log(require('electron'))"
+```
+
+You want an absolute path ending in `electron.exe` (Windows) or `Electron`/`electron`
+(macOS/Linux). If it prints an **empty line**, the binary never arrived — `node_modules/electron/dist/`
+will hold only a licence file instead of ~19 files. Re-run with a reachable mirror:
+
+```bash
+# corporate proxy
+npm config set proxy http://your-proxy:port
+# or point at a mirror
+ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npm install
+```
+
 Then try a **demo** — no Claude Code needed, each plays a scripted loop (run from `viz/`):
 
 ```bash
