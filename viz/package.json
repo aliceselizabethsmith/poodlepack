@@ -3,6 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "description": "Kawaii Kauai visualizer for the PoodlePack build pipeline",
+  "license": "MIT",
+  "author": "Alice Elizabeth Smith",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aliceselizabethsmith/poodlepack.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "main": "main.js",
   "scripts": {
     "start": "electron .",

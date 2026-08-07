@@ -89,7 +89,19 @@ A crew of poodles hands the work down the line, each phase producing a concrete 
 
 ![The Build crew mid-pipeline — speech bubbles and a handoff token](docs/build.png)
 
-Built apps land in `projects/<name>/`. To launch it **with the live window** from any workspace, install the global `/poodlepack` skill (see `~/.claude/skills/poodlepack/`).
+Built apps land in `projects/<name>/`. To launch it **with the live window** from *any* workspace, install the bundled skill — copy [`skills/poodlepack/`](skills/poodlepack/) into `~/.claude/skills/`, then set `POODLEPACK_HOME` inside it to your clone path:
+
+```bash
+# macOS / Linux
+mkdir -p ~/.claude/skills && cp -r skills/poodlepack ~/.claude/skills/
+```
+```powershell
+# Windows PowerShell
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills" | Out-Null
+Copy-Item -Recurse -Force skills\poodlepack "$env:USERPROFILE\.claude\skills\"
+```
+
+`/poodlepack build a CLI that converts CSV to a Markdown table` then works from anywhere.
 
 ---
 
