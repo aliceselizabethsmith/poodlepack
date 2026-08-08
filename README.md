@@ -133,7 +133,11 @@ Copy-Item -Recurse -Force skills\poodlepack "$env:USERPROFILE\.claude\skills\"
 
 ## Platform support
 
-Runs on **Windows, macOS, and Linux**. The windows, the transcript scanner, the launch hook, and audio are all cross-platform — Windows plays audio through the built-in .NET MediaPlayer (which follows the system default output device, virtual ones included), while macOS/Linux use `ffplay`. Developed and most heavily tested on Windows; if you hit a rough edge on macOS/Linux, please open an issue or PR. 🐩
+**Built and tested on Windows.** macOS and Linux are written for but not yet verified — if you run it there, I'd genuinely like to hear how it went. 🐩
+
+Nothing in the design is Windows-specific: the windows are Electron, the transcript scanner is plain Node reading files under `~/.claude/`, and the launch hook is the same JSON on every platform. Audio is the only place the code branches, using the built-in .NET MediaPlayer on Windows (which follows the system default output device, virtual ones included) and `ffplay` elsewhere. Without ffmpeg installed, audio is a silent no-op and everything else still works.
+
+So macOS and Linux *should* be fine, and I'd rather say that plainly than claim a green tick I haven't earned. Issues and PRs from either are very welcome.
 
 ## How it works
 
