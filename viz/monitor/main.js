@@ -77,8 +77,10 @@ const DEMO_DEFS_SHORT = [
   { id: 'demo-tester',   kind: 'tester',     task: 'Write tests for the API',          actions: ['writing test_api.py', 'running the suite'],                   done: 'All 22 tests pass.' },
 ]
 
-// verbose, realistic actions — closer to real agent output, and it exercises the
-// two-line bubbles + hover-for-full. Used by `monitor-window.mjs demo detailed`.
+// verbose, realistic actions — closer to real agent output, and the only demo that
+// fills the four-line bubbles and wraps the header taskline. Reach for this one when
+// changing anything about truncation or bubble sizing; DEMO_DEFS_SHORT is too terse to
+// show it. Used by `monitor-window.mjs demo detailed`.
 const DEMO_DEFS_DETAILED = [
   { id: 'demo-coder', kind: 'coder', task: 'Build a CSV-to-Markdown CLI with column alignment',
     actions: [
