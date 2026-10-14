@@ -1,15 +1,16 @@
-# PoodlePack 🐩🌺
+# PoodlePack
 
-**Watch your [Claude Code](https://docs.claude.com/en/docs/claude-code) agents work as a pack of poodles. Pass complex dev tasks through the Poodle Pipeline.**
+A multi-agent build pipeline for Claude Code, with a live window that shows each agent working.
 
-PoodlePack is a pair of little Electron windows that make Claude Code's multi-agent work *visible* and *fun*. It has two modes:
+Give it a one-line spec. Six agents take it through **design, code, review, fix, test, security scan, and docs**, and the finished project lands in `projects/<name>/`. A small Electron window draws each agent as a poodle, so you can see who has the work, what they are doing right now, and when they hand off.
 
-- **🐾 Watch (the Kennel)** — a live dashboard that auto-opens whenever you fire **background agents**, drawing one poodle per agent with what it's doing right now, a scrolling activity log, and a confetti celebration when each finishes. It reads Claude Code's own transcripts — nothing is sent anywhere.
-- **🏗️ Build (the Crew)** — a ChatDev-style pipeline where a crew of six named poodles take a one-line spec through **design → code → review → fix → test → security → docs**, animated live.
+The same window has a second mode, **the Kennel**, which opens on its own whenever Claude Code starts background agents and shows them live. Both modes only read files (Claude Code's own transcripts and a run folder). Nothing is sent anywhere.
 
-![PoodlePack — the Kennel watching live Claude Code agents](docs/poodlepack.gif)
+![The build pipeline mid-run: one poodle per agent, each with what it is doing now](docs/build.png)
 
-<sub>The Kennel, watching a pack work. (Asset list + capture tips in [`docs/`](docs/).)</sub>
+![The Kennel watching live Claude Code background agents](docs/poodlepack.gif)
+
+<sub>Top: Build mode (the Crew). Bottom: Watch mode (the Kennel). Asset list and capture tips are in [`docs/`](docs/).</sub>
 
 ---
 
